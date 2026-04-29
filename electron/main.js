@@ -26,6 +26,8 @@ function createWindow() {
   }
 }
 
+const isPortable = Boolean(process.env.PORTABLE_EXECUTABLE_DIR);
+
 function buildMenu() {
   const template = [
     {
@@ -34,6 +36,14 @@ function buildMenu() {
         {
           label: 'Check for Updates',
           click: () => {
+            if (isPortable) {
+              dialog.showMessageBox(mainWindow, {
+                type: 'info',
+                title: 'Portable version',
+                message: 'Auto-updates are not supported in the portable version. Download the latest installer from GitHub to update.',
+              });
+              return;
+            }
             if (checkingForUpdate) return;
             manualUpdateCheck = true;
             checkingForUpdate = true;
@@ -101,7 +111,7 @@ app.whenReady().then(() => {
   createWindow();
   buildMenu();
 
-  if (app.isPackaged) {
+  if (app.isPackaged && !isPortable) {
     setupAutoUpdater();
   }
 
