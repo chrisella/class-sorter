@@ -115,6 +115,7 @@ function FriendsTooltip({ student, classId, getStudentById, anchorRef }: Friends
 }
 
 type FocusRelationship = 'none' | 'focused' | 'must-be-with' | 'friend' | 'blacklist' | 'unrelated';
+type PropertyFilter = 'eal' | 'ehcp' | 'send' | 'ppg' | null;
 
 interface StudentCardProps {
   student: Student;
@@ -126,6 +127,7 @@ interface StudentCardProps {
   focusedStudentId: string | null;
   focusedStudent: Student | null;
   onFocusToggle: (studentId: string) => void;
+  propertyFilter: PropertyFilter;
 }
 
 function StudentRow({
@@ -138,6 +140,7 @@ function StudentRow({
   focusedStudentId,
   focusedStudent,
   onFocusToggle,
+  propertyFilter,
 }: StudentCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const rowRef = useRef<HTMLDivElement>(null);
@@ -173,6 +176,19 @@ function StudentRow({
     relationship === 'unrelated'   ? 'opacity-25' :
     '';
 
+  const matchesPropertyFilter =
+    propertyFilter === 'eal'  ? student.isEAL :
+    propertyFilter === 'ehcp' ? student.ehcp :
+    propertyFilter === 'send' ? student.send :
+    propertyFilter === 'ppg'  ? student.ppg :
+    null;
+
+  const activeHighlightClass =
+    focusedStudentId !== null ? focusRingClass :
+    propertyFilter !== null
+      ? (matchesPropertyFilter ? 'ring-2 ring-inset ring-sky-500' : 'opacity-25')
+      : '';
+
   return (
     <div
       ref={rowRef}
@@ -181,7 +197,7 @@ function StudentRow({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={(e) => { e.stopPropagation(); onFocusToggle(student.id); }}
-      className={`relative flex cursor-grab items-center gap-2 rounded-lg border px-2.5 py-1.5 transition-opacity duration-150 active:cursor-grabbing ${toneClassName} ${focusRingClass}`}
+      className={`relative flex cursor-grab items-center gap-2 rounded-lg border px-2.5 py-1.5 transition-opacity duration-150 active:cursor-grabbing ${toneClassName} ${activeHighlightClass}`}
     >
       {isHovered && relationship !== 'unrelated' && (
         <FriendsTooltip
@@ -236,11 +252,18 @@ export function ResultsView() {
   const [showDetailedAnalysis, setShowDetailedAnalysis] = useState(false);
   const [focusedStudentId, setFocusedStudentId] = useState<string | null>(null);
   const [showHint, setShowHint] = useState(true);
+  const [propertyFilter, setPropertyFilter] = useState<PropertyFilter>(null);
 
   const focusedStudent = focusedStudentId ? (students.find((s) => s.id === focusedStudentId) ?? null) : null;
 
   const handleFocusToggle = (studentId: string) => {
+    setPropertyFilter(null);
     setFocusedStudentId((prev) => (prev === studentId ? null : studentId));
+  };
+
+  const handlePropertyFilterToggle = (filter: Exclude<PropertyFilter, null>) => {
+    setFocusedStudentId(null);
+    setPropertyFilter((prev) => (prev === filter ? null : filter));
   };
 
   const assignedStudents = students.filter((student) => student.assignedClassId !== null);
@@ -501,7 +524,7 @@ export function ResultsView() {
         </div>
       )}
 
-      <div className={resultsOuterWrapperClassName} onClick={() => setFocusedStudentId(null)}>
+      <div className={resultsOuterWrapperClassName} onClick={() => { setFocusedStudentId(null); setPropertyFilter(null); }}>
         <div className={resultsGridClassName}>
           {classes.map((cls) => {
             const classStudents = sortStudentsAlphabetically(
@@ -541,18 +564,27 @@ export function ResultsView() {
                         {classStudents.filter((student) => student.gender === 'male').length} boys /{' '}
                         {classStudents.filter((student) => student.gender === 'female').length} girls
                       </span>
-                      <span className="rounded-full bg-white px-2.5 py-1">
-                        {classStudents.filter((student) => student.isEAL).length} EAL
-                      </span>
-                      <span className="rounded-full bg-white px-2.5 py-1">
-                        {classStudents.filter((student) => student.ehcp).length} EHCP
-                      </span>
-                      <span className="rounded-full bg-white px-2.5 py-1">
-                        {classStudents.filter((student) => student.send).length} SEND
-                      </span>
-                      <span className="rounded-full bg-white px-2.5 py-1">
-                        {classStudents.filter((student) => student.ppg).length} PPG
-                      </span>
+                      {(
+                        [
+                          { key: 'eal' as const, label: 'EAL', count: classStudents.filter((s) => s.isEAL).length },
+                          { key: 'ehcp' as const, label: 'EHCP', count: classStudents.filter((s) => s.ehcp).length },
+                          { key: 'send' as const, label: 'SEND', count: classStudents.filter((s) => s.send).length },
+                          { key: 'ppg' as const, label: 'PPG', count: classStudents.filter((s) => s.ppg).length },
+                        ] as const
+                      ).map(({ key, label, count }) => (
+                        <button
+                          key={key}
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); handlePropertyFilterToggle(key); }}
+                          className={`rounded-full px-2.5 py-1 transition-colors ${
+                            propertyFilter === key
+                              ? 'bg-sky-100 text-sky-700 ring-1 ring-sky-300'
+                              : 'bg-white hover:bg-slate-100'
+                          }`}
+                        >
+                          {count} {label}
+                        </button>
+                      ))}
                     </div>
                   </div>
 
@@ -575,6 +607,7 @@ export function ResultsView() {
                             focusedStudentId={focusedStudentId}
                             focusedStudent={focusedStudent}
                             onFocusToggle={handleFocusToggle}
+                            propertyFilter={propertyFilter}
                           />
                         ))}
                       </div>
