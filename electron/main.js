@@ -1,8 +1,11 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, dialog, ipcMain } = require('electron');
 const path = require('path');
+const { autoUpdater } = require('electron-updater');
+
+let mainWindow;
 
 function createWindow() {
-const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
     autoHideMenuBar: true,
@@ -13,18 +16,44 @@ const mainWindow = new BrowserWindow({
     },
   });
 
-  // In development, load from Vite dev server
   if (process.env.NODE_ENV === 'development' || !app.isPackaged) {
     mainWindow.loadURL('http://localhost:5173');
     mainWindow.webContents.openDevTools();
   } else {
-    // In production, load the built files
     mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
   }
 }
 
+function setupAutoUpdater() {
+  autoUpdater.checkForUpdatesAndNotify();
+
+  autoUpdater.on('update-available', () => {
+    dialog.showMessageBox(mainWindow, {
+      type: 'info',
+      title: 'Update available',
+      message: 'A new version of Class Sorter is downloading in the background.',
+    });
+  });
+
+  autoUpdater.on('update-downloaded', () => {
+    dialog.showMessageBox(mainWindow, {
+      type: 'info',
+      title: 'Update ready',
+      message: 'A new version has been downloaded. Restart to apply the update.',
+      buttons: ['Restart now', 'Later'],
+      defaultId: 0,
+    }).then(({ response }) => {
+      if (response === 0) autoUpdater.quitAndInstall();
+    });
+  });
+}
+
 app.whenReady().then(() => {
   createWindow();
+
+  if (app.isPackaged) {
+    setupAutoUpdater();
+  }
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {

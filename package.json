@@ -15,6 +15,7 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/react-table": "^8.21.3",
+    "electron-updater": "^6.8.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "tailwindcss": "^4.1.18",
@@ -36,6 +37,11 @@
   "build": {
     "appId": "com.chrisella.class-sorter",
     "productName": "Class Sorter",
+    "publish": {
+      "provider": "github",
+      "owner": "chrisella",
+      "repo": "class-sorter-new"
+    },
     "files": [
       "dist/**/*",
       "electron/**/*"
@@ -47,15 +53,22 @@
     "mac": {
       "category": "public.app-category.education",
       "icon": "assets/icons/mac/icon.icns",
-      "target": ["dmg"]
+      "target": [
+        "dmg"
+      ]
     },
     "win": {
       "icon": "assets/icons/win/icon.ico",
-      "target": ["nsis", "portable"]
+      "target": [
+        "nsis",
+        "portable"
+      ]
     },
     "linux": {
       "icon": "assets/icons/png/512x512.png",
-      "target": ["AppImage"],
+      "target": [
+        "AppImage"
+      ],
       "category": "Education"
     }
   }
