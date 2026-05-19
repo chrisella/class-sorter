@@ -98,6 +98,7 @@ interface StudentState {
     ehcp: boolean;
     send: boolean;
     ppg: boolean;
+    sl: boolean;
     mustBeWithStudentName?: string;
     preferredFriendNames: string[];
     keepApartFromNames: string[];
@@ -124,6 +125,7 @@ export const useStudentStore = create<StudentState>()(
           ehcp: studentData.ehcp,
           send: studentData.send,
           ppg: studentData.ppg,
+          sl: studentData.sl ?? false,
           mustBeWithStudentId: studentData.mustBeWithStudentId,
           preferredFriends: studentData.preferredFriends,
           keepApartFrom: studentData.keepApartFrom,
@@ -232,6 +234,7 @@ export const useStudentStore = create<StudentState>()(
           ehcp: data.ehcp,
           send: data.send,
           ppg: data.ppg,
+          sl: data.sl ?? false,
           mustBeWithStudentId: null,
           preferredFriends: [],
           keepApartFrom: [],

@@ -115,7 +115,7 @@ function FriendsTooltip({ student, classId, getStudentById, anchorRef }: Friends
 }
 
 type FocusRelationship = 'none' | 'focused' | 'must-be-with' | 'friend' | 'keep-apart' | 'unrelated';
-type PropertyFilter = 'eal' | 'ehcp' | 'send' | 'ppg' | null;
+type PropertyFilter = 'eal' | 'ehcp' | 'send' | 'ppg' | 'sl' | null;
 
 interface StudentCardProps {
   student: Student;
@@ -181,6 +181,7 @@ function StudentRow({
     propertyFilter === 'ehcp' ? student.ehcp :
     propertyFilter === 'send' ? student.send :
     propertyFilter === 'ppg'  ? student.ppg :
+    propertyFilter === 'sl'   ? student.sl :
     null;
 
   const activeHighlightClass =
@@ -223,6 +224,7 @@ function StudentRow({
         {student.ehcp && <span className="rounded bg-white/70 px-1 py-0.5">EHCP</span>}
         {student.send && <span className="rounded bg-white/70 px-1 py-0.5">SEND</span>}
         {student.ppg && <span className="rounded bg-white/70 px-1 py-0.5">PPG</span>}
+        {student.sl && <span className="rounded bg-white/70 px-1 py-0.5">S&amp;L</span>}
         {student.mustBeWithStudentId && (
           <span
             className="rounded bg-white/70 px-1 py-0.5 text-violet-600"
@@ -319,6 +321,7 @@ export function ResultsView() {
         ehcp: classStudents.filter((student) => student.ehcp).length,
         send: classStudents.filter((student) => student.send).length,
         ppg: classStudents.filter((student) => student.ppg).length,
+        sl: classStudents.filter((student) => student.sl).length,
         avgSatisfaction:
           classSatisfaction.length > 0
             ? classSatisfaction.reduce((sum, score) => sum + score.score, 0) / classSatisfaction.length
@@ -570,6 +573,7 @@ export function ResultsView() {
                           { key: 'ehcp' as const, label: 'EHCP', count: classStudents.filter((s) => s.ehcp).length },
                           { key: 'send' as const, label: 'SEND', count: classStudents.filter((s) => s.send).length },
                           { key: 'ppg' as const, label: 'PPG', count: classStudents.filter((s) => s.ppg).length },
+                          { key: 'sl' as const, label: 'S&L', count: classStudents.filter((s) => s.sl).length },
                         ] as const
                       ).map(({ key, label, count }) => (
                         <button
@@ -672,6 +676,7 @@ export function ResultsView() {
                         <th className="px-4 py-3 text-right font-semibold text-slate-500">EHCP</th>
                         <th className="px-4 py-3 text-right font-semibold text-slate-500">SEND</th>
                         <th className="px-4 py-3 text-right font-semibold text-slate-500">PPG</th>
+                        <th className="px-4 py-3 text-right font-semibold text-slate-500">S&amp;L</th>
                         <th className="px-4 py-3 text-right font-semibold text-slate-500">Friend match</th>
                       </tr>
                     </thead>
@@ -699,6 +704,7 @@ export function ResultsView() {
                           <td className="px-4 py-3 text-right text-slate-600">{cls.ehcp}</td>
                           <td className="px-4 py-3 text-right text-slate-600">{cls.send}</td>
                           <td className="px-4 py-3 text-right text-slate-600">{cls.ppg}</td>
+                          <td className="px-4 py-3 text-right text-slate-600">{cls.sl}</td>
                           <td className="px-4 py-3 text-right text-slate-600">{cls.avgSatisfaction.toFixed(1)}%</td>
                         </tr>
                       ))}

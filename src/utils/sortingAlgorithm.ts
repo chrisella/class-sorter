@@ -233,6 +233,7 @@ function normalizeSortingConfig(config: SortingConfiguration): SortingConfigurat
       ehcpBalance: safeWeight(config.priorityWeights.ehcpBalance, 0.2),
       sendBalance: safeWeight(config.priorityWeights.sendBalance, 0.2),
       ppgBalance: safeWeight(config.priorityWeights.ppgBalance, 0.2),
+      slBalance: safeWeight(config.priorityWeights.slBalance, 0.2),
     },
     maxIterations: Math.max(1000, config.maxIterations || 10000),
   };
@@ -734,6 +735,7 @@ function calculateSoftScore(
   score += weights.ehcpBalance * calculateBooleanBalance(students, classes, assignment, 'ehcp');
   score += weights.sendBalance * calculateBooleanBalance(students, classes, assignment, 'send');
   score += weights.ppgBalance * calculateBooleanBalance(students, classes, assignment, 'ppg');
+  score += weights.slBalance * calculateBooleanBalance(students, classes, assignment, 'sl');
 
   return score;
 }
@@ -852,7 +854,7 @@ function calculateBooleanBalance(
   students: Student[],
   classes: Class[],
   assignment: Assignment,
-  field: 'ehcp' | 'send' | 'ppg'
+  field: 'ehcp' | 'send' | 'ppg' | 'sl'
 ): number {
   const classCounts = new Map<string, { matching: number; total: number }>();
   for (const cls of classes) {

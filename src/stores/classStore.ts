@@ -34,6 +34,7 @@ const defaultSortingConfig: SortingConfiguration = {
     ehcpBalance: 0.2,
     sendBalance: 0.2,
     ppgBalance: 0.2,
+    slBalance: 0.2,
   },
   maxIterations: 10000,
 };

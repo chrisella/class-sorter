@@ -37,6 +37,7 @@ export interface SortingConfiguration {
     ehcpBalance: number;             // Weight for EHCP distribution (0-1)
     sendBalance: number;             // Weight for SEND distribution (0-1)
     ppgBalance: number;              // Weight for PPG distribution (0-1)
+    slBalance: number;               // Weight for S&L distribution (0-1)
   };
   maxIterations: number;
 }

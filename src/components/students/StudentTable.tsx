@@ -63,26 +63,6 @@ export function StudentTable() {
           );
         },
       }),
-      columnHelper.accessor('isEAL', {
-        header: 'EAL',
-        cell: (info) => {
-          const student = info.row.original;
-          const isEAL = info.getValue();
-          return (
-            <button
-              onClick={() => updateStudent(student.id, { isEAL: !isEAL })}
-              className={`inline-flex px-2 py-1 text-xs font-medium rounded-full cursor-pointer transition-colors ${
-                isEAL
-                  ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
-                  : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-              }`}
-              title={`Click to ${isEAL ? 'remove' : 'mark as'} EAL`}
-            >
-              {isEAL ? 'Yes' : 'No'}
-            </button>
-          );
-        },
-      }),
       columnHelper.accessor('behavior', {
         header: 'Behavior',
         cell: (info) => {
@@ -119,6 +99,26 @@ export function StudentTable() {
               title={`Click to change to ${nextValue}`}
             >
               {value}
+            </button>
+          );
+        },
+      }),
+      columnHelper.accessor('isEAL', {
+        header: 'EAL',
+        cell: (info) => {
+          const student = info.row.original;
+          const isEAL = info.getValue();
+          return (
+            <button
+              onClick={() => updateStudent(student.id, { isEAL: !isEAL })}
+              className={`inline-flex px-2 py-1 text-xs font-medium rounded-full cursor-pointer transition-colors ${
+                isEAL
+                  ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
+                  : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+              }`}
+              title={`Click to ${isEAL ? 'remove' : 'mark as'} EAL`}
+            >
+              {isEAL ? 'Yes' : 'No'}
             </button>
           );
         },
@@ -177,6 +177,26 @@ export function StudentTable() {
                   : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
               }`}
               title={`Click to ${value ? 'unset' : 'set'} PPG`}
+            >
+              {value ? 'Yes' : 'No'}
+            </button>
+          );
+        },
+      }),
+      columnHelper.accessor('sl', {
+        header: 'S&L',
+        cell: (info) => {
+          const student = info.row.original;
+          const value = info.getValue();
+          return (
+            <button
+              onClick={() => updateStudent(student.id, { sl: !value })}
+              className={`inline-flex px-2 py-1 text-xs font-medium rounded-full cursor-pointer transition-colors ${
+                value
+                  ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
+                  : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+              }`}
+              title={`Click to ${value ? 'unset' : 'set'} S&L`}
             >
               {value ? 'Yes' : 'No'}
             </button>

@@ -11,6 +11,7 @@ export interface Student {
   ehcp: boolean;
   send: boolean;
   ppg: boolean;
+  sl: boolean;
   mustBeWithStudentId: string | null;
   preferredFriends: string[];      // Max 3 student IDs
   keepApartFrom: string[];         // Cannot be in same class
@@ -28,6 +29,7 @@ export interface StudentInput {
   ehcp: boolean;
   send: boolean;
   ppg: boolean;
+  sl: boolean;
   mustBeWithStudentName?: string;
   preferredFriendNames: string[];      // Names for input, resolved to IDs
   keepApartFromNames: string[];        // Names for input, resolved to IDs

@@ -67,6 +67,7 @@ export function SortingView() {
   const totalMale = students.filter((student) => student.gender === 'male').length;
   const totalFemale = students.filter((student) => student.gender === 'female').length;
   const totalEAL = students.filter((student) => student.isEAL).length;
+  const totalSL = students.filter((student) => student.sl).length;
   const totalMustBeWithPairs = (() => {
     const seen = new Set<string>();
     let count = 0;
@@ -94,6 +95,7 @@ export function SortingView() {
     ehcpBalance: safeWeight(sortingConfig.priorityWeights.ehcpBalance, 0.2),
     sendBalance: safeWeight(sortingConfig.priorityWeights.sendBalance, 0.2),
     ppgBalance: safeWeight(sortingConfig.priorityWeights.ppgBalance, 0.2),
+    slBalance: safeWeight(sortingConfig.priorityWeights.slBalance, 0.2),
   };
 
   const readinessLabel = canSort
@@ -113,6 +115,7 @@ export function SortingView() {
     { key: 'ehcpBalance', label: 'Spread EHCP pupils evenly' },
     { key: 'sendBalance', label: 'Spread SEND pupils evenly' },
     { key: 'ppgBalance', label: 'Spread PPG pupils evenly' },
+    { key: 'slBalance', label: 'Spread S&L pupils evenly' },
   ];
 
   const updateWeight = (key: keyof typeof priorityWeights, value: number) => {
@@ -276,6 +279,7 @@ export function SortingView() {
                 <SummaryStat label="EHCP" value={totalEHCP.toString()} compact />
                 <SummaryStat label="SEND" value={totalSEND.toString()} compact />
                 <SummaryStat label="PPG" value={totalPPG.toString()} compact />
+                <SummaryStat label="S&L" value={totalSL.toString()} compact />
                 <SummaryStat
                   label="Average per class"
                   value={classes.length > 0 ? Math.round(students.length / classes.length).toString() : '-'}

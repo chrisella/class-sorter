@@ -18,6 +18,7 @@ export function EditStudentModal({ student, onClose }: Props) {
   const [ehcp, setEhcp] = useState(student.ehcp);
   const [send, setSend] = useState(student.send);
   const [ppg, setPpg] = useState(student.ppg);
+  const [sl, setSl] = useState(student.sl ?? false);
   const [preferredFriends, setPreferredFriends] = useState<string[]>(student.preferredFriends);
   const [keepApartFrom, setKeepApartFrom] = useState<string[]>(student.keepApartFrom);
   const [mustBeWith, setMustBeWith] = useState<string[]>(
@@ -53,6 +54,7 @@ export function EditStudentModal({ student, onClose }: Props) {
       ehcp,
       send,
       ppg,
+      sl,
       preferredFriends: preferredFriends.slice(0, 3),
       keepApartFrom,
     });
@@ -114,21 +116,6 @@ export function EditStudentModal({ student, onClose }: Props) {
             </div>
           </div>
 
-          {/* EAL */}
-          <div>
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                checked={isEAL}
-                onChange={(e) => setIsEAL(e.target.checked)}
-                className="mr-2 rounded"
-              />
-              <span className="text-sm font-medium text-gray-700">
-                English as Additional Language (EAL)
-              </span>
-            </label>
-          </div>
-
           {/* Behavior and Ability */}
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -158,34 +145,55 @@ export function EditStudentModal({ student, onClose }: Props) {
           </div>
 
           {/* Additional Needs/Funding */}
-          <div className="grid grid-cols-3 gap-3">
-            <label className="flex items-center text-sm font-medium text-gray-700">
-              <input
-                type="checkbox"
-                checked={ehcp}
-                onChange={(e) => setEhcp(e.target.checked)}
-                className="mr-2 rounded"
-              />
-              EHCP
-            </label>
-            <label className="flex items-center text-sm font-medium text-gray-700">
-              <input
-                type="checkbox"
-                checked={send}
-                onChange={(e) => setSend(e.target.checked)}
-                className="mr-2 rounded"
-              />
-              SEND
-            </label>
-            <label className="flex items-center text-sm font-medium text-gray-700">
-              <input
-                type="checkbox"
-                checked={ppg}
-                onChange={(e) => setPpg(e.target.checked)}
-                className="mr-2 rounded"
-              />
-              PPG
-            </label>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Additional needs</label>
+            <div className="grid grid-cols-3 gap-2">
+              <label className="flex items-center text-sm font-medium text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={isEAL}
+                  onChange={(e) => setIsEAL(e.target.checked)}
+                  className="mr-2 rounded"
+                />
+                EAL
+              </label>
+              <label className="flex items-center text-sm font-medium text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={ehcp}
+                  onChange={(e) => setEhcp(e.target.checked)}
+                  className="mr-2 rounded"
+                />
+                EHCP
+              </label>
+              <label className="flex items-center text-sm font-medium text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={send}
+                  onChange={(e) => setSend(e.target.checked)}
+                  className="mr-2 rounded"
+                />
+                SEND
+              </label>
+              <label className="flex items-center text-sm font-medium text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={ppg}
+                  onChange={(e) => setPpg(e.target.checked)}
+                  className="mr-2 rounded"
+                />
+                PPG
+              </label>
+              <label className="flex items-center text-sm font-medium text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={sl}
+                  onChange={(e) => setSl(e.target.checked)}
+                  className="mr-2 rounded"
+                />
+                S&amp;L
+              </label>
+            </div>
           </div>
 
           {/* Preferred Friends */}
