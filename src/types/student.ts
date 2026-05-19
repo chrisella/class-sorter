@@ -12,6 +12,7 @@ export interface Student {
   send: boolean;
   ppg: boolean;
   sl: boolean;
+  sourceClassId: string | null;
   mustBeWithStudentId: string | null;
   preferredFriends: string[];      // Max 3 student IDs
   keepApartFrom: string[];         // Cannot be in same class

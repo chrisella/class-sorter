@@ -1,6 +1,16 @@
 import type { SatisfactionScore } from './student';
+import type { SourceClassColor } from '../utils/sourceClassColors';
+
+export type { SourceClassColor };
 
 export type ClassSizeMode = 'strict' | 'flexible';
+
+export interface SourceClass {
+  id: string;
+  name: string;
+  color: SourceClassColor | null;
+  createdAt: string;
+}
 
 export interface Class {
   id: string;
@@ -38,6 +48,7 @@ export interface SortingConfiguration {
     sendBalance: number;             // Weight for SEND distribution (0-1)
     ppgBalance: number;              // Weight for PPG distribution (0-1)
     slBalance: number;               // Weight for S&L distribution (0-1)
+    sourceClassBalance: number;      // Weight for source class distribution (0-0.5)
   };
   maxIterations: number;
 }

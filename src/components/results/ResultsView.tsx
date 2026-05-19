@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useClassStore, useStudentStore } from '../../stores';
+import { sourceClassColorMap } from '../../utils/sourceClassColors';
 import { calculateStudentSatisfaction, getAssignmentInsights } from '../../utils/sortingAlgorithm';
 import { exportToCSV, exportToPDF, sortStudentsAlphabetically } from '../../utils/exportUtils';
 import type { Student, ClassStatistics } from '../../types';
@@ -116,6 +117,7 @@ function FriendsTooltip({ student, classId, getStudentById, anchorRef }: Friends
 
 type FocusRelationship = 'none' | 'focused' | 'must-be-with' | 'friend' | 'keep-apart' | 'unrelated';
 type PropertyFilter = 'eal' | 'ehcp' | 'send' | 'ppg' | 'sl' | null;
+type RowColorMode = 'friend' | 'source';
 
 interface StudentCardProps {
   student: Student;
@@ -128,6 +130,8 @@ interface StudentCardProps {
   focusedStudent: Student | null;
   onFocusToggle: (studentId: string) => void;
   propertyFilter: PropertyFilter;
+  rowColorMode: RowColorMode;
+  sourceClassMap: Map<string, { color: string | null; name: string }>;
 }
 
 function StudentRow({
@@ -141,13 +145,24 @@ function StudentRow({
   focusedStudent,
   onFocusToggle,
   propertyFilter,
+  rowColorMode,
+  sourceClassMap,
 }: StudentCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const rowRef = useRef<HTMLDivElement>(null);
 
   const satisfaction = calculateStudentSatisfaction(student, classId, students);
   const hasViolation = satisfaction.hasKeepApartViolation || satisfaction.hasMustBeWithViolation;
-  const toneClassName = getSatisfactionTone(satisfaction.score, hasViolation);
+
+  const sourceClassEntry = student.sourceClassId ? sourceClassMap.get(student.sourceClassId) : null;
+  const sourceColorBg200 = sourceClassEntry?.color
+    ? sourceClassColorMap[sourceClassEntry.color as keyof typeof sourceClassColorMap]?.bg200
+    : null;
+
+  const toneClassName =
+    rowColorMode === 'source'
+      ? `border-slate-200 ${sourceColorBg200 ?? 'bg-white'} text-slate-900${hasViolation ? ' ring-2 ring-inset ring-rose-500' : ''}`
+      : getSatisfactionTone(satisfaction.score, hasViolation);
 
   const relationship: FocusRelationship = (() => {
     if (focusedStudentId === null) return 'none';
@@ -248,13 +263,19 @@ function StudentRow({
 }
 
 export function ResultsView() {
-  const { classes, lastSortingResult, sortingConfig } = useClassStore();
+  const { classes, sourceClasses, lastSortingResult, sortingConfig } = useClassStore();
   const { students, assignStudentToClass, getStudentById } = useStudentStore();
   const [draggedStudent, setDraggedStudent] = useState<Student | null>(null);
   const [showDetailedAnalysis, setShowDetailedAnalysis] = useState(false);
   const [focusedStudentId, setFocusedStudentId] = useState<string | null>(null);
   const [showHint, setShowHint] = useState(true);
   const [propertyFilter, setPropertyFilter] = useState<PropertyFilter>(null);
+  const [rowColorMode, setRowColorMode] = useState<RowColorMode>('friend');
+
+  const sourceClassMap = useMemo(
+    () => new Map(sourceClasses.map((sc) => [sc.id, { color: sc.color, name: sc.name }])),
+    [sourceClasses]
+  );
 
   const focusedStudent = focusedStudentId ? (students.find((s) => s.id === focusedStudentId) ?? null) : null;
 
@@ -527,6 +548,28 @@ export function ResultsView() {
         </div>
       )}
 
+      {sourceClasses.length > 0 && (
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium text-slate-500">Row color:</span>
+          <div className="inline-flex rounded-lg border border-slate-200 bg-slate-100 p-0.5 text-xs font-medium">
+            <button
+              type="button"
+              onClick={() => setRowColorMode('friend')}
+              className={`rounded-md px-2.5 py-1 transition-colors ${rowColorMode === 'friend' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+            >
+              Friend match
+            </button>
+            <button
+              type="button"
+              onClick={() => setRowColorMode('source')}
+              className={`rounded-md px-2.5 py-1 transition-colors ${rowColorMode === 'source' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+            >
+              Source class
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className={resultsOuterWrapperClassName} onClick={() => { setFocusedStudentId(null); setPropertyFilter(null); }}>
         <div className={resultsGridClassName}>
           {classes.map((cls) => {
@@ -590,6 +633,24 @@ export function ResultsView() {
                         </button>
                       ))}
                     </div>
+
+                    {rowColorMode === 'source' && sourceClasses.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {sourceClasses.map((sc) => {
+                          const count = classStudents.filter((s) => s.sourceClassId === sc.id).length;
+                          const colorMeta = sc.color ? sourceClassColorMap[sc.color] : null;
+                          return (
+                            <span
+                              key={sc.id}
+                              className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${colorMeta ? colorMeta.bg200 : 'bg-slate-100'} text-slate-700`}
+                            >
+                              <span className={`h-1.5 w-1.5 rounded-full ${colorMeta ? colorMeta.bg500 : 'bg-slate-400'}`} />
+                              {sc.name}: {count}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
 
                   <div className="min-h-[240px] flex-1 overflow-y-auto p-3">
@@ -612,6 +673,8 @@ export function ResultsView() {
                             focusedStudent={focusedStudent}
                             onFocusToggle={handleFocusToggle}
                             propertyFilter={propertyFilter}
+                            rowColorMode={rowColorMode}
+                            sourceClassMap={sourceClassMap}
                           />
                         ))}
                       </div>

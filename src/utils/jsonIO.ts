@@ -1,7 +1,8 @@
-import type { Student, Class, SortingConfiguration } from '../types';
+import type { Student, Class, SortingConfiguration, SourceClass } from '../types';
 
 interface AppState {
   schemaVersion: 1;
+  sourceClasses: SourceClass[];
   classes: Class[];
   sortingConfig: SortingConfiguration;
   students: Student[];
@@ -10,10 +11,12 @@ interface AppState {
 export function exportState(
   students: Student[],
   classes: Class[],
-  sortingConfig: SortingConfiguration
+  sortingConfig: SortingConfiguration,
+  sourceClasses: SourceClass[]
 ): void {
   const state: AppState = {
     schemaVersion: 1,
+    sourceClasses,
     classes,
     sortingConfig,
     students,
@@ -48,6 +51,10 @@ export function validateAndParseState(raw: unknown): AppState {
   }
   if (typeof obj.sortingConfig !== 'object' || obj.sortingConfig === null) {
     throw new Error('Invalid file: missing sortingConfig.');
+  }
+
+  if (!Array.isArray(obj.sourceClasses)) {
+    obj.sourceClasses = [];
   }
 
   return obj as unknown as AppState;

@@ -11,6 +11,7 @@ import { useStudentStore } from '../../stores';
 import type { Student } from '../../types';
 import { EditStudentModal } from './EditStudentModal';
 import { ConfirmDialog } from '../shared/ConfirmDialog';
+import { SourceClassChip } from './SourceClassChip';
 
 const columnHelper = createColumnHelper<Student>();
 
@@ -42,6 +43,11 @@ export function StudentTable() {
         cell: (info) => (
           <span className="font-medium text-gray-900">{info.getValue()}</span>
         ),
+      }),
+      columnHelper.display({
+        id: 'sourceClass',
+        header: 'Source',
+        cell: (info) => <SourceClassChip student={info.row.original} />,
       }),
       columnHelper.accessor('gender', {
         header: 'Gender',

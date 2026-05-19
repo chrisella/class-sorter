@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useClassStore, useStudentStore } from '../../stores';
 import { ConfirmDialog } from '../shared/ConfirmDialog';
+import { SourceClassSection } from './SourceClassSection';
 import type { Class } from '../../types';
 import { buildTargetSizes } from '../../utils/classSizeUtils';
 
@@ -58,7 +59,10 @@ export function ClassesView() {
 
   return (
     <div className="space-y-4">
-      {/* Toolbar */}
+      {/* Source Classes */}
+      <SourceClassSection />
+
+      {/* Destination Classes toolbar */}
       <div className="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm lg:flex-row lg:items-center lg:justify-between">
         <div>
           <p className="text-sm font-medium uppercase tracking-[0.18em] text-sky-700">Step 1</p>

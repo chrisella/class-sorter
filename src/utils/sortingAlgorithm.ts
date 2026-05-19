@@ -234,6 +234,7 @@ function normalizeSortingConfig(config: SortingConfiguration): SortingConfigurat
       sendBalance: safeWeight(config.priorityWeights.sendBalance, 0.2),
       ppgBalance: safeWeight(config.priorityWeights.ppgBalance, 0.2),
       slBalance: safeWeight(config.priorityWeights.slBalance, 0.2),
+      sourceClassBalance: safeWeight(config.priorityWeights.sourceClassBalance, 0.2),
     },
     maxIterations: Math.max(1000, config.maxIterations || 10000),
   };
@@ -737,6 +738,10 @@ function calculateSoftScore(
   score += weights.ppgBalance * calculateBooleanBalance(students, classes, assignment, 'ppg');
   score += weights.slBalance * calculateBooleanBalance(students, classes, assignment, 'sl');
 
+  if (weights.sourceClassBalance > 0) {
+    score += weights.sourceClassBalance * calculateSourceClassBalance(students, classes, assignment);
+  }
+
   return score;
 }
 
@@ -881,6 +886,34 @@ function calculateBooleanBalance(
   const mean = ratios.reduce((sum, ratio) => sum + ratio, 0) / ratios.length;
   const variance = ratios.reduce((sum, ratio) => sum + Math.pow(ratio - mean, 2), 0) / ratios.length;
   return Math.max(0, 1 - variance * 4);
+}
+
+function calculateSourceClassBalance(
+  students: Student[],
+  classes: Class[],
+  assignment: Assignment
+): number {
+  const sourceClassIds = [...new Set(students.map((s) => s.sourceClassId).filter((id): id is string => id !== null))];
+  if (sourceClassIds.length === 0) return 1;
+
+  let totalVariance = 0;
+  for (const sourceClassId of sourceClassIds) {
+    const sourceStudents = students.filter((s) => s.sourceClassId === sourceClassId);
+    const totalInSource = sourceStudents.length;
+    if (totalInSource === 0) continue;
+
+    const ratios = classes.map((cls) => {
+      const inClass = sourceStudents.filter((s) => assignment.get(s.id) === cls.id).length;
+      return inClass / totalInSource;
+    });
+
+    const mean = ratios.reduce((sum, r) => sum + r, 0) / ratios.length;
+    const variance = ratios.reduce((sum, r) => sum + Math.pow(r - mean, 2), 0) / ratios.length;
+    totalVariance += variance;
+  }
+
+  const avgVariance = totalVariance / sourceClassIds.length;
+  return Math.max(0, 1 - avgVariance * 4);
 }
 
 function buildResult(

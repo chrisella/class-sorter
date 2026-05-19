@@ -7,7 +7,7 @@ import type { SortingResult } from '../../types';
 
 export function SortingView() {
   const { students, assignStudentToClass, clearAllAssignments } = useStudentStore();
-  const { classes, sortingConfig, setSortingConfig, setLastSortingResult } = useClassStore();
+  const { classes, sourceClasses, sortingConfig, setSortingConfig, setLastSortingResult } = useClassStore();
   const { setView, isSorting, setIsSorting, sortingProgress, setSortingProgress } = useUIStore();
   const [error, setError] = useState('');
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -96,6 +96,7 @@ export function SortingView() {
     sendBalance: safeWeight(sortingConfig.priorityWeights.sendBalance, 0.2),
     ppgBalance: safeWeight(sortingConfig.priorityWeights.ppgBalance, 0.2),
     slBalance: safeWeight(sortingConfig.priorityWeights.slBalance, 0.2),
+    sourceClassBalance: safeWeight(sortingConfig.priorityWeights.sourceClassBalance, 0.2),
   };
 
   const readinessLabel = canSort
@@ -106,7 +107,9 @@ export function SortingView() {
     ? 'Add students'
     : 'Add classes';
 
-  const sliders: Array<{ key: keyof typeof priorityWeights; label: string }> = [
+  const totalSourceClassStudents = students.filter((s) => s.sourceClassId !== null).length;
+
+  const sliders: Array<{ key: keyof typeof priorityWeights; label: string; max?: number; hint?: string }> = [
     { key: 'friendPreference', label: 'Keep friends together' },
     { key: 'genderBalance', label: 'Balance boys and girls' },
     { key: 'ealBalance', label: 'Spread EAL pupils evenly' },
@@ -116,6 +119,12 @@ export function SortingView() {
     { key: 'sendBalance', label: 'Spread SEND pupils evenly' },
     { key: 'ppgBalance', label: 'Spread PPG pupils evenly' },
     { key: 'slBalance', label: 'Spread S&L pupils evenly' },
+    {
+      key: 'sourceClassBalance',
+      label: 'Spread original classes evenly',
+      max: 50,
+      hint: 'Lowest priority — yields to other balance goals.',
+    },
   ];
 
   const updateWeight = (key: keyof typeof priorityWeights, value: number) => {
@@ -256,6 +265,8 @@ export function SortingView() {
                     key={slider.key}
                     label={slider.label}
                     value={priorityWeights[slider.key]}
+                    max={slider.max}
+                    hint={slider.hint}
                     onChange={(value) => updateWeight(slider.key, value)}
                   />
                 ))}
@@ -280,6 +291,9 @@ export function SortingView() {
                 <SummaryStat label="SEND" value={totalSEND.toString()} compact />
                 <SummaryStat label="PPG" value={totalPPG.toString()} compact />
                 <SummaryStat label="S&L" value={totalSL.toString()} compact />
+                {sourceClasses.length > 0 && (
+                  <SummaryStat label="With source class" value={totalSourceClassStudents.toString()} compact />
+                )}
                 <SummaryStat
                   label="Average per class"
                   value={classes.length > 0 ? Math.round(students.length / classes.length).toString() : '-'}
@@ -364,10 +378,14 @@ function SummaryStat({
 function SliderRow({
   label,
   value,
+  max = 100,
+  hint,
   onChange,
 }: {
   label: string;
   value: number;
+  max?: number;
+  hint?: string;
   onChange: (value: number) => void;
 }) {
   return (
@@ -379,11 +397,12 @@ function SliderRow({
       <input
         type="range"
         min="0"
-        max="100"
-        value={value * 100}
+        max={max}
+        value={Math.round(value * 100)}
         onChange={(e) => onChange(parseInt(e.target.value, 10) / 100)}
         className="w-full"
       />
+      {hint && <p className="mt-0.5 text-xs text-gray-400">{hint}</p>}
     </div>
   );
 }

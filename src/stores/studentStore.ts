@@ -79,6 +79,7 @@ function applyMustBeWithPair(
 
 interface StudentState {
   students: Student[];
+  countStudentsInSourceClass: (sourceClassId: string) => number;
   addStudent: (student: Omit<Student, 'id' | 'createdAt' | 'updatedAt' | 'assignedClassId'>) => string;
   updateStudent: (id: string, updates: Partial<Student>) => void;
   setMustBeWithPair: (
@@ -112,6 +113,10 @@ export const useStudentStore = create<StudentState>()(
     (set, get) => ({
       students: [],
 
+      countStudentsInSourceClass: (sourceClassId) => {
+        return get().students.filter((s) => s.sourceClassId === sourceClassId).length;
+      },
+
       addStudent: (studentData) => {
         const id = uuidv4();
         const now = new Date();
@@ -126,6 +131,7 @@ export const useStudentStore = create<StudentState>()(
           send: studentData.send,
           ppg: studentData.ppg,
           sl: studentData.sl ?? false,
+          sourceClassId: studentData.sourceClassId ?? null,
           mustBeWithStudentId: studentData.mustBeWithStudentId,
           preferredFriends: studentData.preferredFriends,
           keepApartFrom: studentData.keepApartFrom,
@@ -235,6 +241,7 @@ export const useStudentStore = create<StudentState>()(
           send: data.send,
           ppg: data.ppg,
           sl: data.sl ?? false,
+          sourceClassId: null,
           mustBeWithStudentId: null,
           preferredFriends: [],
           keepApartFrom: [],

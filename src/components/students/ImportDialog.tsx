@@ -44,6 +44,7 @@ export function ImportDialog({ onClose }: Props) {
       useStudentStore.setState({ students: parsed.students });
       useClassStore.setState({
         classes: parsed.classes,
+        sourceClasses: parsed.sourceClasses ?? [],
         sortingConfig: parsed.sortingConfig,
         lastSortingResult: null,
       });

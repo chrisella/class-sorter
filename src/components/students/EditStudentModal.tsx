@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useStudentStore } from '../../stores';
+import { useStudentStore, useClassStore } from '../../stores';
 import type { Student, Gender, Rank } from '../../types';
 import { StudentSelect } from './StudentSelect';
 
@@ -10,6 +10,7 @@ interface Props {
 
 export function EditStudentModal({ student, onClose }: Props) {
   const { updateStudent, setMustBeWithPair, students } = useStudentStore();
+  const { sourceClasses } = useClassStore();
   const [name, setName] = useState(student.name);
   const [gender, setGender] = useState<Gender>(student.gender);
   const [isEAL, setIsEAL] = useState(student.isEAL);
@@ -21,6 +22,7 @@ export function EditStudentModal({ student, onClose }: Props) {
   const [sl, setSl] = useState(student.sl ?? false);
   const [preferredFriends, setPreferredFriends] = useState<string[]>(student.preferredFriends);
   const [keepApartFrom, setKeepApartFrom] = useState<string[]>(student.keepApartFrom);
+  const [sourceClassId, setSourceClassId] = useState<string | null>(student.sourceClassId ?? null);
   const [mustBeWith, setMustBeWith] = useState<string[]>(
     student.mustBeWithStudentId ? [student.mustBeWithStudentId] : []
   );
@@ -55,6 +57,7 @@ export function EditStudentModal({ student, onClose }: Props) {
       send,
       ppg,
       sl,
+      sourceClassId,
       preferredFriends: preferredFriends.slice(0, 3),
       keepApartFrom,
     });
@@ -88,6 +91,23 @@ export function EditStudentModal({ student, onClose }: Props) {
               placeholder="Enter pupil name"
             />
           </div>
+
+          {/* Source Class */}
+          {sourceClasses.length > 0 && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Source class</label>
+              <select
+                value={sourceClassId ?? ''}
+                onChange={(e) => setSourceClassId(e.target.value || null)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+              >
+                <option value="">— None —</option>
+                {sourceClasses.map((sc) => (
+                  <option key={sc.id} value={sc.id}>{sc.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {/* Gender */}
           <div>

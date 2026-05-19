@@ -12,7 +12,7 @@ export function StudentView() {
   const [showImport, setShowImport] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const { students, deleteAllStudents } = useStudentStore();
-  const { classes, sortingConfig } = useClassStore();
+  const { classes, sortingConfig, sourceClasses } = useClassStore();
 
   return (
     <div className="space-y-4">
@@ -35,7 +35,7 @@ export function StudentView() {
           </button>
           {(students.length > 0 || classes.length > 0) && (
             <button
-              onClick={() => exportState(students, classes, sortingConfig)}
+              onClick={() => exportState(students, classes, sortingConfig, sourceClasses)}
               className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
               title="Save all pupils and classes as a .json file"
             >
