@@ -12,11 +12,12 @@ import type { Student } from '../../types';
 import { EditStudentModal } from './EditStudentModal';
 import { ConfirmDialog } from '../shared/ConfirmDialog';
 import { SourceClassChip } from './SourceClassChip';
+import { RelationshipCell } from './RelationshipCell';
 
 const columnHelper = createColumnHelper<Student>();
 
 export function StudentTable() {
-  const { students, deleteStudent, getStudentById, updateStudent } = useStudentStore();
+  const { students, deleteStudent, updateStudent } = useStudentStore();
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [deletingStudent, setDeletingStudent] = useState<Student | null>(null);
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -209,61 +210,20 @@ export function StudentTable() {
           );
         },
       }),
-      columnHelper.accessor('preferredFriends', {
-        header: 'Preferred Friends',
-        cell: (info) => {
-          const friendIds = info.getValue();
-          if (friendIds.length === 0) return <span className="text-gray-400">None</span>;
-          const friendNames = friendIds
-            .map((id) => getStudentById(id)?.name)
-            .filter(Boolean);
-          return (
-            <div className="flex flex-wrap gap-1">
-              {friendNames.map((name, i) => (
-                <span
-                  key={i}
-                  className="inline-flex px-2 py-0.5 text-xs bg-green-100 text-green-700 rounded"
-                >
-                  {name}
-                </span>
-              ))}
-            </div>
-          );
-        },
+      columnHelper.display({
+        id: 'friends',
+        header: 'Friends',
+        cell: (info) => <RelationshipCell student={info.row.original} type="friends" />,
       }),
-      columnHelper.accessor('keepApartFrom', {
+      columnHelper.display({
+        id: 'keepApart',
         header: 'Keep apart',
-        cell: (info) => {
-          const keepApartIds = info.getValue() ?? [];
-          if (keepApartIds.length === 0) return <span className="text-gray-400">None</span>;
-          const keepApartNames = keepApartIds
-            .map((id) => getStudentById(id)?.name)
-            .filter(Boolean);
-          return (
-            <div className="flex flex-wrap gap-1">
-              {keepApartNames.map((name, i) => (
-                <span
-                  key={i}
-                  className="inline-flex px-2 py-0.5 text-xs bg-red-100 text-red-700 rounded"
-                >
-                  {name}
-                </span>
-              ))}
-            </div>
-          );
-        },
+        cell: (info) => <RelationshipCell student={info.row.original} type="keepApart" />,
       }),
-      columnHelper.accessor('mustBeWithStudentId', {
-        header: 'Must Be With',
-        cell: (info) => {
-          const partnerId = info.getValue();
-          if (!partnerId) return <span className="text-gray-400">None</span>;
-          return (
-            <span className="inline-flex px-2 py-0.5 text-xs bg-purple-100 text-purple-700 rounded">
-              {getStudentById(partnerId)?.name || 'Unknown'}
-            </span>
-          );
-        },
+      columnHelper.display({
+        id: 'mustBeWith',
+        header: 'Must be with',
+        cell: (info) => <RelationshipCell student={info.row.original} type="mustBeWith" />,
       }),
       columnHelper.display({
         id: 'actions',
@@ -286,7 +246,7 @@ export function StudentTable() {
         ),
       }),
     ],
-    [getStudentById, updateStudent]
+    [updateStudent]
   );
 
   const table = useReactTable({
