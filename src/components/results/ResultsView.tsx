@@ -35,7 +35,7 @@ function FriendsTooltip({ student, classId, getStudentById, anchorRef }: Friends
   const hasSections =
     student.preferredFriends.length > 0 ||
     mustBeWithPartner !== null ||
-    student.blacklistedStudents.length > 0;
+    student.keepApartFrom.length > 0;
 
   return createPortal(
     <div
@@ -71,11 +71,11 @@ function FriendsTooltip({ student, classId, getStudentById, anchorRef }: Friends
         </div>
       )}
 
-      {student.blacklistedStudents.length > 0 && (
+      {student.keepApartFrom.length > 0 && (
         <div className={student.preferredFriends.length > 0 ? 'mb-3' : mustBeWithPartner ? 'mt-3 border-t border-slate-700 pt-3' : ''}>
           <div className="mb-1.5 font-medium text-rose-300">Keep apart from</div>
           <div className="space-y-1">
-            {student.blacklistedStudents.map((peerId) => {
+            {student.keepApartFrom.map((peerId) => {
               const peer = getStudentById(peerId);
               if (!peer) return null;
               const conflict = peer.assignedClassId === classId;
@@ -92,7 +92,7 @@ function FriendsTooltip({ student, classId, getStudentById, anchorRef }: Friends
       )}
 
       {student.preferredFriends.length > 0 && (
-        <div className={mustBeWithPartner || student.blacklistedStudents.length > 0 ? 'border-t border-slate-700 pt-3' : ''}>
+        <div className={mustBeWithPartner || student.keepApartFrom.length > 0 ? 'border-t border-slate-700 pt-3' : ''}>
           <div className="mb-1.5 font-medium text-slate-200">Friend requests</div>
           <div className="space-y-1">
             {student.preferredFriends.map((friendId) => {
@@ -114,7 +114,7 @@ function FriendsTooltip({ student, classId, getStudentById, anchorRef }: Friends
   );
 }
 
-type FocusRelationship = 'none' | 'focused' | 'must-be-with' | 'friend' | 'blacklist' | 'unrelated';
+type FocusRelationship = 'none' | 'focused' | 'must-be-with' | 'friend' | 'keep-apart' | 'unrelated';
 type PropertyFilter = 'eal' | 'ehcp' | 'send' | 'ppg' | null;
 
 interface StudentCardProps {
@@ -146,7 +146,7 @@ function StudentRow({
   const rowRef = useRef<HTMLDivElement>(null);
 
   const satisfaction = calculateStudentSatisfaction(student, classId, students);
-  const hasViolation = satisfaction.hasBlacklistViolation || satisfaction.hasMustBeWithViolation;
+  const hasViolation = satisfaction.hasKeepApartViolation || satisfaction.hasMustBeWithViolation;
   const toneClassName = getSatisfactionTone(satisfaction.score, hasViolation);
 
   const relationship: FocusRelationship = (() => {
@@ -162,9 +162,9 @@ function StudentRow({
       student.preferredFriends.includes(focusedStudentId)
     ) return 'friend';
     if (
-      focusedStudent.blacklistedStudents.includes(student.id) ||
-      student.blacklistedStudents.includes(focusedStudentId)
-    ) return 'blacklist';
+      focusedStudent.keepApartFrom.includes(student.id) ||
+      student.keepApartFrom.includes(focusedStudentId)
+    ) return 'keep-apart';
     return 'unrelated';
   })();
 
@@ -172,7 +172,7 @@ function StudentRow({
     relationship === 'focused'     ? 'ring-2 ring-inset ring-slate-700' :
     relationship === 'must-be-with'? 'ring-2 ring-inset ring-violet-500' :
     relationship === 'friend'      ? 'ring-2 ring-inset ring-emerald-500' :
-    relationship === 'blacklist'   ? 'ring-2 ring-inset ring-rose-500' :
+    relationship === 'keep-apart'  ? 'ring-2 ring-inset ring-rose-500' :
     relationship === 'unrelated'   ? 'opacity-25' :
     '';
 
@@ -231,7 +231,7 @@ function StudentRow({
             ↔
           </span>
         )}
-        {student.blacklistedStudents.length > 0 && (
+        {student.keepApartFrom.length > 0 && (
           <span className="rounded bg-white/70 px-1 py-0.5 text-rose-600" title="Has keep-apart constraints">
             ⊘
           </span>

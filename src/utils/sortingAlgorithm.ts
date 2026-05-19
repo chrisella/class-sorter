@@ -15,7 +15,7 @@ type Assignment = Map<string, string>;
 
 interface EvaluationResult {
   violations: ConstraintViolation[];
-  blacklistCount: number;
+  keepApartCount: number;
   mustBeWithCount: number;
   softScore: number;
   overallScore: number;
@@ -23,7 +23,7 @@ interface EvaluationResult {
 }
 
 const FLEXIBLE_SIZE_WARNING_THRESHOLD = 1;
-const BLACKLIST_PENALTY = 1_000_000;
+const KEEP_APART_PENALTY = 1_000_000;
 const MUST_BE_WITH_PENALTY = 1_000;
 
 export async function runSorting(
@@ -51,7 +51,7 @@ async function runFlexibleSorting(
       if (!validateFlexibleHardConstraints(students, currentAssignment)) {
         reject(
           new Error(
-            'Cannot satisfy hard constraints (blacklist and/or must-be-with). Check for conflicting requirements.'
+            'Cannot satisfy hard constraints (keep-apart and/or must-be-with). Check for conflicting requirements.'
           )
         );
         return;
@@ -257,7 +257,7 @@ function generateFlexibleInitialAssignment(students: Student[], classes: Class[]
         if (!student) return sum;
         return (
           sum +
-          student.blacklistedStudents.length * 3 +
+          student.keepApartFrom.length * 3 +
           student.preferredFriends.length +
           (student.mustBeWithStudentId ? 2 : 0)
         );
@@ -276,12 +276,12 @@ function generateFlexibleInitialAssignment(students: Student[], classes: Class[]
         .map(([studentId]) => studentId);
 
       return unitStudents.every((student) => {
-        const hasBlacklistViolation = student.blacklistedStudents.some((blacklistedId) =>
-          classStudents.includes(blacklistedId)
+        const hasKeepApartViolation = student.keepApartFrom.some((keepApartId) =>
+          classStudents.includes(keepApartId)
         );
-        const isBlacklistedByOther = classStudents.some((studentId) => {
+        const isKeptApartByOther = classStudents.some((studentId) => {
           const classmate = studentMap.get(studentId);
-          return classmate?.blacklistedStudents.includes(student.id);
+          return classmate?.keepApartFrom.includes(student.id);
         });
         const pairedStudentId = student.mustBeWithStudentId;
         const breaksPair =
@@ -289,7 +289,7 @@ function generateFlexibleInitialAssignment(students: Student[], classes: Class[]
           assignment.has(pairedStudentId) &&
           assignment.get(pairedStudentId) !== cls.id;
 
-        return !hasBlacklistViolation && !isBlacklistedByOther && !breaksPair;
+        return !hasKeepApartViolation && !isKeptApartByOther && !breaksPair;
       });
     });
 
@@ -338,11 +338,11 @@ function generateStrictInitialAssignment(students: Student[], buckets: Class[]):
 
   const sortedStudents = [...students].sort((a, b) => {
     const scoreA =
-      a.blacklistedStudents.length * 3 +
+      a.keepApartFrom.length * 3 +
       a.preferredFriends.length +
       (a.mustBeWithStudentId ? 2 : 0);
     const scoreB =
-      b.blacklistedStudents.length * 3 +
+      b.keepApartFrom.length * 3 +
       b.preferredFriends.length +
       (b.mustBeWithStudentId ? 2 : 0);
     return scoreB - scoreA;
@@ -361,8 +361,8 @@ function generateStrictInitialAssignment(students: Student[], buckets: Class[]):
         const bestMetrics = getStrictPlacementMetrics(student, best.id, assignment, studentMap);
         const currentMetrics = getStrictPlacementMetrics(student, current.id, assignment, studentMap);
 
-        if (currentMetrics.blacklistViolations < bestMetrics.blacklistViolations) return current;
-        if (currentMetrics.blacklistViolations > bestMetrics.blacklistViolations) return best;
+        if (currentMetrics.keepApartViolations < bestMetrics.keepApartViolations) return current;
+        if (currentMetrics.keepApartViolations > bestMetrics.keepApartViolations) return best;
         if (currentMetrics.mustBeWithViolations < bestMetrics.mustBeWithViolations) return current;
         if (currentMetrics.mustBeWithViolations > bestMetrics.mustBeWithViolations) return best;
         if (currentMetrics.friendMatches > bestMetrics.friendMatches) return current;
@@ -386,7 +386,7 @@ function getStrictPlacementMetrics(
   assignment: Assignment,
   studentMap: Map<string, Student>
 ) {
-  let blacklistViolations = 0;
+  let keepApartViolations = 0;
   let mustBeWithViolations = 0;
   let friendMatches = 0;
 
@@ -396,10 +396,10 @@ function getStrictPlacementMetrics(
     if (!classmate) return;
 
     if (
-      student.blacklistedStudents.includes(assignedStudentId) ||
-      classmate.blacklistedStudents.includes(student.id)
+      student.keepApartFrom.includes(assignedStudentId) ||
+      classmate.keepApartFrom.includes(student.id)
     ) {
-      blacklistViolations += 1;
+      keepApartViolations += 1;
     }
 
     if (
@@ -422,7 +422,7 @@ function getStrictPlacementMetrics(
     mustBeWithViolations += 1;
   }
 
-  return { blacklistViolations, mustBeWithViolations, friendMatches };
+  return { keepApartViolations, mustBeWithViolations, friendMatches };
 }
 
 function validateFlexibleHardConstraints(students: Student[], assignment: Assignment): boolean {
@@ -430,8 +430,8 @@ function validateFlexibleHardConstraints(students: Student[], assignment: Assign
     const classId = assignment.get(student.id);
     if (!classId) continue;
 
-    for (const blacklistedId of student.blacklistedStudents) {
-      if (assignment.get(blacklistedId) === classId) {
+    for (const keepApartId of student.keepApartFrom) {
+      if (assignment.get(keepApartId) === classId) {
         return false;
       }
     }
@@ -588,15 +588,15 @@ function evaluateAssignment(
     scope,
     sizeCompliance
   );
-  const blacklistCount = violations.filter((violation) => violation.type === 'blacklist').length;
+  const keepApartCount = violations.filter((violation) => violation.type === 'keep_apart').length;
   const mustBeWithCount = violations.filter((violation) => violation.type === 'must_be_with').length;
   const softScore = calculateSoftScore(students, classes, assignment, config, sizeCompliance);
   const overallScore =
-    -blacklistCount * BLACKLIST_PENALTY - mustBeWithCount * MUST_BE_WITH_PENALTY + softScore;
+    -keepApartCount * KEEP_APART_PENALTY - mustBeWithCount * MUST_BE_WITH_PENALTY + softScore;
 
   return {
     violations,
-    blacklistCount,
+    keepApartCount,
     mustBeWithCount,
     softScore,
     overallScore,
@@ -616,23 +616,23 @@ export function collectConstraintViolations(
   const classMap = new Map(classes.map((cls) => [cls.id, cls]));
   const violations: ConstraintViolation[] = [];
 
-  const seenBlacklistPairs = new Set<string>();
+  const seenKeepApartPairs = new Set<string>();
   for (const student of students) {
     const classId = assignment.get(student.id);
     if (!classId) continue;
 
-    for (const relatedStudentId of student.blacklistedStudents) {
+    for (const relatedStudentId of student.keepApartFrom) {
       const relatedClassId = assignment.get(relatedStudentId);
       if (!relatedClassId || relatedClassId !== classId) continue;
 
-      const key = ['blacklist', student.id, relatedStudentId].sort().join(':');
-      if (seenBlacklistPairs.has(key)) continue;
-      seenBlacklistPairs.add(key);
+      const key = ['keep_apart', student.id, relatedStudentId].sort().join(':');
+      if (seenKeepApartPairs.has(key)) continue;
+      seenKeepApartPairs.add(key);
 
       const relatedStudent = studentMap.get(relatedStudentId);
       const cls = classMap.get(classId);
       violations.push({
-        type: 'blacklist',
+        type: 'keep_apart',
         scope,
         severity: 'hard',
         studentId: student.id,
@@ -641,7 +641,7 @@ export function collectConstraintViolations(
         relatedStudentName: relatedStudent?.name,
         classId,
         className: cls?.name,
-        message: `${student.name} and ${relatedStudent?.name || 'Unknown'} are blacklisted but assigned together.`,
+        message: `${student.name} and ${relatedStudent?.name || 'Unknown'} should be kept apart but are assigned together.`,
       });
     }
   }
@@ -937,7 +937,7 @@ function buildResult(
     strictOverrideApplied:
       config.classSizeMode === 'strict' &&
       evaluation.violations.some(
-        (violation) => violation.type === 'blacklist' || violation.type === 'must_be_with'
+        (violation) => violation.type === 'keep_apart' || violation.type === 'must_be_with'
       ),
   };
 }
@@ -972,7 +972,7 @@ export function getAssignmentInsights(
   return {
     sizeCompliance,
     violations,
-    blacklistViolations: violations.filter((violation) => violation.type === 'blacklist'),
+    blacklistViolations: violations.filter((violation) => violation.type === 'keep_apart'),
     mustBeWithViolations: violations.filter((violation) => violation.type === 'must_be_with'),
     classSizeViolations: violations.filter((violation) => violation.type === 'class_size'),
   };
@@ -992,8 +992,8 @@ export function calculateStudentSatisfaction(
   const maxFriends = student.preferredFriends.length;
   const score = maxFriends > 0 ? (friendsInClass.length / maxFriends) * 100 : 100;
 
-  const hasBlacklistViolation = student.blacklistedStudents.some((blacklistedId) =>
-    classmateIds.includes(blacklistedId)
+  const hasKeepApartViolation = student.keepApartFrom.some((keepApartId) =>
+    classmateIds.includes(keepApartId)
   );
   const hasMustBeWithViolation = Boolean(
     student.mustBeWithStudentId &&
@@ -1007,7 +1007,7 @@ export function calculateStudentSatisfaction(
     preferredFriendsInClass: friendsInClass.length,
     maxPossibleFriends: maxFriends,
     friendsMatched: friendsInClass,
-    hasBlacklistViolation,
+    hasKeepApartViolation,
     hasMustBeWithViolation,
   };
 }

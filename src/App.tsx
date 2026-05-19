@@ -7,8 +7,8 @@ import { ResultsView } from './components/results/ResultsView';
 type View = 'students' | 'classes' | 'sorting' | 'results';
 
 const navItems: { id: View; label: string; step: number }[] = [
-  { id: 'students', label: 'Pupils', step: 1 },
-  { id: 'classes', label: 'Classes', step: 2 },
+  { id: 'classes', label: 'Classes', step: 1 },
+  { id: 'students', label: 'Pupils', step: 2 },
   { id: 'sorting', label: 'Create Groups', step: 3 },
   { id: 'results', label: 'Review Groups', step: 4 },
 ];

@@ -19,7 +19,7 @@ export function EditStudentModal({ student, onClose }: Props) {
   const [send, setSend] = useState(student.send);
   const [ppg, setPpg] = useState(student.ppg);
   const [preferredFriends, setPreferredFriends] = useState<string[]>(student.preferredFriends);
-  const [blacklistedStudents, setBlacklistedStudents] = useState<string[]>(student.blacklistedStudents);
+  const [keepApartFrom, setKeepApartFrom] = useState<string[]>(student.keepApartFrom);
   const [mustBeWith, setMustBeWith] = useState<string[]>(
     student.mustBeWithStudentId ? [student.mustBeWithStudentId] : []
   );
@@ -36,11 +36,11 @@ export function EditStudentModal({ student, onClose }: Props) {
     if (
       selectedMustBeWithId &&
       (
-        blacklistedStudents.includes(selectedMustBeWithId) ||
-        selectedPartner?.blacklistedStudents.includes(student.id)
+        keepApartFrom.includes(selectedMustBeWithId) ||
+        selectedPartner?.keepApartFrom.includes(student.id)
       )
     ) {
-      setPairError('Must-be-with student cannot also be blacklisted.');
+      setPairError('Must-be-with student cannot also be kept apart.');
       return;
     }
 
@@ -54,7 +54,7 @@ export function EditStudentModal({ student, onClose }: Props) {
       send,
       ppg,
       preferredFriends: preferredFriends.slice(0, 3),
-      blacklistedStudents,
+      keepApartFrom,
     });
 
     const pairResult = setMustBeWithPair(student.id, selectedMustBeWithId);
@@ -196,7 +196,7 @@ export function EditStudentModal({ student, onClose }: Props) {
             <StudentSelect
               students={students}
               selectedIds={preferredFriends}
-              excludeIds={blacklistedStudents}
+              excludeIds={keepApartFrom}
               excludeSelf={student.id}
               onChange={setPreferredFriends}
               maxSelections={3}
@@ -204,18 +204,18 @@ export function EditStudentModal({ student, onClose }: Props) {
             />
           </div>
 
-          {/* Blacklisted Students */}
+          {/* Keep apart from */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Should not be placed with
+              Keep apart from
             </label>
             <StudentSelect
               students={students}
-              selectedIds={blacklistedStudents}
+              selectedIds={keepApartFrom}
               excludeIds={[...preferredFriends, ...mustBeWith]}
               excludeSelf={student.id}
-              onChange={setBlacklistedStudents}
-              placeholder="Search for pupils to avoid..."
+              onChange={setKeepApartFrom}
+              placeholder="Search for pupils to keep apart..."
             />
           </div>
 
@@ -227,7 +227,7 @@ export function EditStudentModal({ student, onClose }: Props) {
             <StudentSelect
               students={students}
               selectedIds={mustBeWith}
-              excludeIds={blacklistedStudents}
+              excludeIds={keepApartFrom}
               excludeSelf={student.id}
               onChange={setMustBeWith}
               maxSelections={1}

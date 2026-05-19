@@ -18,7 +18,7 @@ export function AddStudentForm({ onClose }: Props) {
   const [send, setSend] = useState(false);
   const [ppg, setPpg] = useState(false);
   const [preferredFriends, setPreferredFriends] = useState<string[]>([]);
-  const [blacklistedStudents, setBlacklistedStudents] = useState<string[]>([]);
+  const [keepApartFrom, setKeepApartFrom] = useState<string[]>([]);
   const [mustBeWith, setMustBeWith] = useState<string[]>([]);
   const [pairError, setPairError] = useState('');
 
@@ -27,8 +27,8 @@ export function AddStudentForm({ onClose }: Props) {
     if (!name.trim()) return;
 
     const selectedMustBeWithId = mustBeWith[0] || null;
-    if (selectedMustBeWithId && blacklistedStudents.includes(selectedMustBeWithId)) {
-      setPairError('Must-be-with student cannot also be blacklisted.');
+    if (selectedMustBeWithId && keepApartFrom.includes(selectedMustBeWithId)) {
+      setPairError('Must-be-with student cannot also be kept apart.');
       return;
     }
     setPairError('');
@@ -44,7 +44,7 @@ export function AddStudentForm({ onClose }: Props) {
       ppg,
       mustBeWithStudentId: selectedMustBeWithId,
       preferredFriends: preferredFriends.slice(0, 3),
-      blacklistedStudents,
+      keepApartFrom,
     });
 
     onClose();
@@ -180,24 +180,24 @@ export function AddStudentForm({ onClose }: Props) {
             <StudentSelect
               students={students}
               selectedIds={preferredFriends}
-              excludeIds={blacklistedStudents}
+              excludeIds={keepApartFrom}
               onChange={setPreferredFriends}
               maxSelections={3}
               placeholder="Search for pupils..."
             />
           </div>
 
-          {/* Blacklisted Students */}
+          {/* Keep apart from */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Should not be placed with
+              Keep apart from
             </label>
             <StudentSelect
               students={students}
-              selectedIds={blacklistedStudents}
+              selectedIds={keepApartFrom}
               excludeIds={[...preferredFriends, ...mustBeWith]}
-              onChange={setBlacklistedStudents}
-              placeholder="Search for pupils to avoid..."
+              onChange={setKeepApartFrom}
+              placeholder="Search for pupils to keep apart..."
             />
           </div>
 
@@ -209,7 +209,7 @@ export function AddStudentForm({ onClose }: Props) {
             <StudentSelect
               students={students}
               selectedIds={mustBeWith}
-              excludeIds={blacklistedStudents}
+              excludeIds={keepApartFrom}
               onChange={setMustBeWith}
               maxSelections={1}
               placeholder="Search for one pupil..."

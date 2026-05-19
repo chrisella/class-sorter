@@ -63,7 +63,7 @@ export interface SortingResult {
 }
 
 export interface ConstraintViolation {
-  type: 'blacklist' | 'must_be_with' | 'class_size';
+  type: 'keep_apart' | 'must_be_with' | 'class_size';
   scope: 'auto_sort' | 'manual_edit';
   studentId: string;
   studentName?: string;

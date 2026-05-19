@@ -17,68 +17,6 @@ function getStudentsOrderedForClassAssignments(students: Student[], classes: Cla
   return [...orderedAssignedStudents, ...orderedUnassignedStudents];
 }
 
-export function exportStudentsCSV(
-  students: Student[],
-  getStudentById: (id: string) => Student | undefined
-): void {
-  const headers = [
-    'Name',
-    'Gender',
-    'EAL',
-    'Behavior',
-    'Ability',
-    'EHCP',
-    'SEND',
-    'PPG',
-    'Must Be With',
-    'Preferred Friends',
-    'Blacklisted Students',
-  ];
-
-  const rows = students.map((student) => {
-    const preferredFriendNames = student.preferredFriends
-      .map((id) => getStudentById(id)?.name)
-      .filter(Boolean)
-      .join('; ');
-    const blacklistedNames = student.blacklistedStudents
-      .map((id) => getStudentById(id)?.name)
-      .filter(Boolean)
-      .join('; ');
-    const mustBeWithName = student.mustBeWithStudentId
-      ? getStudentById(student.mustBeWithStudentId)?.name || ''
-      : '';
-
-    return [
-      student.name,
-      student.gender === 'male' ? 'M' : 'F',
-      student.isEAL ? 'Yes' : 'No',
-      student.behavior.toString(),
-      student.ability.toString(),
-      student.ehcp ? 'Yes' : 'No',
-      student.send ? 'Yes' : 'No',
-      student.ppg ? 'Yes' : 'No',
-      mustBeWithName,
-      preferredFriendNames || '',
-      blacklistedNames || '',
-    ];
-  });
-
-  const csvContent = [
-    headers.join(','),
-    ...rows.map((row) =>
-      row.map((cell) => {
-        // Escape cells containing commas or quotes
-        if (cell.includes(',') || cell.includes('"') || cell.includes('\n') || cell.includes(';')) {
-          return `"${cell.replace(/"/g, '""')}"`;
-        }
-        return cell;
-      }).join(',')
-    ),
-  ].join('\n');
-
-  downloadFile(csvContent, 'students.csv', 'text/csv');
-}
-
 export function exportToCSV(
   students: Student[],
   classes: Class[],
@@ -97,7 +35,7 @@ export function exportToCSV(
     'Assigned Class',
     'Preferred Friends',
     'Friends in Class',
-    'Blacklisted Students',
+    'Keep Apart From',
   ];
 
   const orderedStudents = getStudentsOrderedForClassAssignments(students, classes);
@@ -108,7 +46,7 @@ export function exportToCSV(
       .map((id) => getStudentById(id)?.name)
       .filter(Boolean)
       .join('; ');
-    const blacklistedNames = student.blacklistedStudents
+    const keepApartNames = student.keepApartFrom
       .map((id) => getStudentById(id)?.name)
       .filter(Boolean)
       .join('; ');
@@ -135,7 +73,7 @@ export function exportToCSV(
       assignedClass?.name || 'Unassigned',
       preferredFriendNames || '-',
       `${friendsInClass}/${student.preferredFriends.length}`,
-      blacklistedNames || '-',
+      keepApartNames || '-',
     ];
   });
 

@@ -33,6 +33,8 @@ out
 
 # Local test data (keep locally, never commit)
 *.csv
+exported-students-test-data-61.json
+students-test-data-61.json
 
 # Local environment variables
 .env

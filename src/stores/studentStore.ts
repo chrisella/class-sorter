@@ -52,11 +52,11 @@ function applyMustBeWithPair(
     return { students, error: 'Selected partner was not found.' };
   }
 
-  const hasBlacklistConflict =
-    student.blacklistedStudents.includes(targetId) ||
-    target.blacklistedStudents.includes(studentId);
-  if (hasBlacklistConflict) {
-    return { students, error: 'Students who are blacklisted cannot be set as must-be-with.' };
+  const hasKeepApartConflict =
+    student.keepApartFrom.includes(targetId) ||
+    target.keepApartFrom.includes(studentId);
+  if (hasKeepApartConflict) {
+    return { students, error: 'Students who are kept apart cannot be set as must-be-with.' };
   }
 
   detachPair(studentId);
@@ -100,7 +100,7 @@ interface StudentState {
     ppg: boolean;
     mustBeWithStudentName?: string;
     preferredFriendNames: string[];
-    blacklistedStudentNames: string[];
+    keepApartFromNames: string[];
   }>) => void;
   assignStudentToClass: (studentId: string, classId: string | null) => void;
   clearAllAssignments: () => void;
@@ -115,8 +115,18 @@ export const useStudentStore = create<StudentState>()(
         const id = uuidv4();
         const now = new Date();
         const newStudent: Student = {
-          ...studentData,
           id,
+          name: studentData.name,
+          gender: studentData.gender,
+          isEAL: studentData.isEAL,
+          behavior: studentData.behavior,
+          ability: studentData.ability,
+          ehcp: studentData.ehcp,
+          send: studentData.send,
+          ppg: studentData.ppg,
+          mustBeWithStudentId: studentData.mustBeWithStudentId,
+          preferredFriends: studentData.preferredFriends,
+          keepApartFrom: studentData.keepApartFrom,
           assignedClassId: null,
           createdAt: now,
           updatedAt: now,
@@ -187,7 +197,7 @@ export const useStudentStore = create<StudentState>()(
             .map((s) => ({
               ...s,
               preferredFriends: s.preferredFriends.filter((fId) => fId !== id),
-              blacklistedStudents: s.blacklistedStudents.filter((bId) => bId !== id),
+              keepApartFrom: s.keepApartFrom.filter((bId) => bId !== id),
               mustBeWithStudentId: s.mustBeWithStudentId === id ? null : s.mustBeWithStudentId,
             })),
         }));
@@ -224,7 +234,7 @@ export const useStudentStore = create<StudentState>()(
           ppg: data.ppg,
           mustBeWithStudentId: null,
           preferredFriends: [],
-          blacklistedStudents: [],
+          keepApartFrom: [],
           assignedClassId: null,
           createdAt: now,
           updatedAt: now,
@@ -248,8 +258,8 @@ export const useStudentStore = create<StudentState>()(
             .filter((id): id is string => id !== undefined && id !== student.id)
             .slice(0, 3);
 
-          // Resolve blacklisted students
-          student.blacklistedStudents = data.blacklistedStudentNames
+          // Resolve keep-apart students
+          student.keepApartFrom = data.keepApartFromNames
             .map((name) => nameToId.get(name.toLowerCase().trim()))
             .filter((id): id is string => id !== undefined && id !== student.id);
         });
@@ -300,6 +310,7 @@ export const useStudentStore = create<StudentState>()(
     }),
     {
       name: 'class-sorter-students',
+      version: 1,
     }
   )
 );

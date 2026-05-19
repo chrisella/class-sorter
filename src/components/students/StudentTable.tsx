@@ -205,17 +205,17 @@ export function StudentTable() {
           );
         },
       }),
-      columnHelper.accessor('blacklistedStudents', {
-        header: 'Blacklisted',
+      columnHelper.accessor('keepApartFrom', {
+        header: 'Keep apart',
         cell: (info) => {
-          const blacklistIds = info.getValue();
-          if (blacklistIds.length === 0) return <span className="text-gray-400">None</span>;
-          const blacklistNames = blacklistIds
+          const keepApartIds = info.getValue() ?? [];
+          if (keepApartIds.length === 0) return <span className="text-gray-400">None</span>;
+          const keepApartNames = keepApartIds
             .map((id) => getStudentById(id)?.name)
             .filter(Boolean);
           return (
             <div className="flex flex-wrap gap-1">
-              {blacklistNames.map((name, i) => (
+              {keepApartNames.map((name, i) => (
                 <span
                   key={i}
                   className="inline-flex px-2 py-0.5 text-xs bg-red-100 text-red-700 rounded"

@@ -43,7 +43,7 @@ export function SortingView() {
       );
 
       const blockingViolations = result.violations.filter(
-        (violation) => violation.type === 'blacklist' || violation.type === 'must_be_with'
+        (violation) => violation.type === 'keep_apart' || violation.type === 'must_be_with'
       );
 
       if (sortingConfig.classSizeMode === 'strict' && blockingViolations.length > 0) {
@@ -59,7 +59,7 @@ export function SortingView() {
     }
   };
 
-  const totalBlacklists = students.reduce((sum, student) => sum + student.blacklistedStudents.length, 0);
+  const totalKeepApart = students.reduce((sum, student) => sum + student.keepApartFrom.length, 0);
   const totalPreferences = students.reduce((sum, student) => sum + student.preferredFriends.length, 0);
   const totalEHCP = students.filter((student) => student.ehcp).length;
   const totalSEND = students.filter((student) => student.send).length;
@@ -268,7 +268,7 @@ export function SortingView() {
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                <SummaryStat label="Blacklist pairs" value={totalBlacklists.toString()} compact />
+                <SummaryStat label="Keep-apart pairs" value={totalKeepApart.toString()} compact />
                 <SummaryStat label="Friend preferences" value={totalPreferences.toString()} compact />
                 <SummaryStat label="Must-with pairs" value={totalMustBeWithPairs.toString()} compact />
                 <SummaryStat label="Boys / Girls" value={`${totalMale} / ${totalFemale}`} compact />
@@ -325,8 +325,8 @@ export function SortingView() {
         <ConfirmDialog
           title="Strict Size Overrides Required"
           message={`Exact target sizes (${targetSizesLabel}) were achieved, but this result introduces ${
-            pendingStrictResult.violations.filter((violation) => violation.type === 'blacklist').length
-          } blacklist violation(s) and ${
+            pendingStrictResult.violations.filter((violation) => violation.type === 'keep_apart').length
+          } keep-apart violation(s) and ${
             pendingStrictResult.violations.filter((violation) => violation.type === 'must_be_with').length
           } must-be-with violation(s). Apply this strict result?`}
           confirmLabel="Apply Result"

@@ -61,7 +61,7 @@ export function ClassesView() {
       {/* Toolbar */}
       <div className="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <p className="text-sm font-medium uppercase tracking-[0.18em] text-sky-700">Step 2</p>
+          <p className="text-sm font-medium uppercase tracking-[0.18em] text-sky-700">Step 1</p>
           <h2 className="mt-2 text-2xl font-semibold text-slate-900">Set up your classes</h2>
           <p className="mt-2 text-sm text-slate-600">
             Add the classes you want to fill. Target sizes are calculated automatically from the number of pupils.

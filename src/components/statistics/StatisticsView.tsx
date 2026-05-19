@@ -168,7 +168,7 @@ export function StatisticsView() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <p className="text-sm text-gray-500">Blacklist Violations</p>
+          <p className="text-sm text-gray-500">Keep-Apart Violations</p>
           <p
             className={`text-2xl font-bold ${
               insights.blacklistViolations.length > 0 ? 'text-red-600' : 'text-green-600'

@@ -111,6 +111,7 @@ export const useClassStore = create<ClassState>()(
     }),
     {
       name: 'class-sorter-classes',
+      version: 1,
     }
   )
 );

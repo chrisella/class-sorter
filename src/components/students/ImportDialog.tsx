@@ -1,310 +1,81 @@
-import { useState, useCallback } from 'react';
-import { useStudentStore } from '../../stores';
-import type { Gender, Rank } from '../../types';
+import { useState } from 'react';
+import { useStudentStore, useClassStore } from '../../stores';
+import { validateAndParseState } from '../../utils/jsonIO';
 
 interface Props {
   onClose: () => void;
 }
 
-interface ParsedRow {
-  name: string;
-  gender: Gender;
-  isEAL: boolean;
-  behavior: Rank;
-  ability: Rank;
-  ehcp: boolean;
-  send: boolean;
-  ppg: boolean;
-  mustBeWithStudentName: string | null;
-  preferredFriendNames: string[];
-  blacklistedStudentNames: string[];
-  isValid: boolean;
-  errors: string[];
-}
-
 export function ImportDialog({ onClose }: Props) {
-  const { importStudents, students } = useStudentStore();
-  const [_csvContent, setCsvContent] = useState('');
-  const [parsedRows, setParsedRows] = useState<ParsedRow[]>([]);
+  const { students: _existingStudents } = useStudentStore();
   const [error, setError] = useState('');
-
-  const parseBoolean = (value: string): boolean => {
-    const normalized = value.trim().toLowerCase();
-    return normalized === 'yes' || normalized === 'true' || normalized === '1' || normalized === 'y';
-  };
-
-  const parseRank = (value: string, fieldName: string, errors: string[]): Rank => {
-    const normalized = value.trim();
-    if (!normalized) return 2;
-    if (normalized === '1' || normalized === '2' || normalized === '3') {
-      return Number(normalized) as Rank;
-    }
-    errors.push(`${fieldName} must be 1, 2, or 3`);
-    return 2;
-  };
-
-  const parseCSV = useCallback((content: string) => {
-    setError('');
-    const lines = content.trim().split('\n');
-    if (lines.length < 2) {
-      setError('CSV must have a header row and at least one data row');
-      setParsedRows([]);
-      return;
-    }
-
-    const headers = lines[0].split(',').map((h) => h.trim().toLowerCase());
-    const nameIndex = headers.findIndex((h) => h.includes('name'));
-    const genderIndex = headers.findIndex((h) => h.includes('gender'));
-    const ealIndex = headers.findIndex((h) => h.includes('eal'));
-    const behaviorIndex = headers.findIndex((h) => h.includes('behavior'));
-    const abilityIndex = headers.findIndex((h) => h.includes('ability'));
-    const ehcpIndex = headers.findIndex((h) => h.includes('ehcp') || h.includes('echp'));
-    const sendIndex = headers.findIndex((h) => h.includes('send'));
-    const ppgIndex = headers.findIndex((h) => h.includes('ppg'));
-    const mustBeWithIndex = headers.findIndex(
-      (h) => h.includes('must be with') || h.includes('mustwith') || h.includes('must_with')
-    );
-    const friendsIndex = headers.findIndex((h) => h.includes('friend') || h.includes('prefer'));
-    const blacklistIndex = headers.findIndex((h) => h.includes('blacklist') || h.includes('avoid') || h.includes('cannot'));
-
-    if (nameIndex === -1) {
-      setError('CSV must have a "Name" column');
-      setParsedRows([]);
-      return;
-    }
-
-    const rows: ParsedRow[] = [];
-    for (let i = 1; i < lines.length; i++) {
-      const values = parseCSVLine(lines[i]);
-      const errors: string[] = [];
-
-      const name = values[nameIndex]?.trim() || '';
-      if (!name) {
-        errors.push('Name is required');
-      }
-
-      let gender: Gender = 'male';
-      if (genderIndex !== -1) {
-        const genderValue = values[genderIndex]?.trim().toLowerCase() || '';
-        if (genderValue.startsWith('f')) {
-          gender = 'female';
-        } else if (!genderValue.startsWith('m') && genderValue) {
-          errors.push(`Invalid gender: ${genderValue}`);
-        }
-      }
-
-      let isEAL = false;
-      if (ealIndex !== -1) {
-        const ealValue = values[ealIndex]?.trim().toLowerCase() || '';
-        isEAL = parseBoolean(ealValue);
-      }
-
-      const behavior = behaviorIndex !== -1
-        ? parseRank(values[behaviorIndex] || '', 'Behavior', errors)
-        : 2;
-      const ability = abilityIndex !== -1
-        ? parseRank(values[abilityIndex] || '', 'Ability', errors)
-        : 2;
-      const ehcp = ehcpIndex !== -1 ? parseBoolean(values[ehcpIndex] || '') : false;
-      const send = sendIndex !== -1 ? parseBoolean(values[sendIndex] || '') : false;
-      const ppg = ppgIndex !== -1 ? parseBoolean(values[ppgIndex] || '') : false;
-      let mustBeWithStudentName: string | null = null;
-      if (mustBeWithIndex !== -1) {
-        const mustBeWithValue = values[mustBeWithIndex]?.trim() || '';
-        if (mustBeWithValue) {
-          if (/[;|]/.test(mustBeWithValue)) {
-            errors.push('Must Be With must contain only one student name');
-          } else {
-            mustBeWithStudentName = mustBeWithValue;
-          }
-        }
-      }
-
-      let preferredFriendNames: string[] = [];
-      if (friendsIndex !== -1) {
-        const friendsValue = values[friendsIndex]?.trim() || '';
-        preferredFriendNames = friendsValue
-          .split(/[;|]/)
-          .map((n) => n.trim())
-          .filter(Boolean)
-          .slice(0, 3);
-      }
-
-      let blacklistedStudentNames: string[] = [];
-      if (blacklistIndex !== -1) {
-        const blacklistValue = values[blacklistIndex]?.trim() || '';
-        blacklistedStudentNames = blacklistValue
-          .split(/[;|]/)
-          .map((n) => n.trim())
-          .filter(Boolean);
-      }
-
-      rows.push({
-        name,
-        gender,
-        isEAL,
-        behavior,
-        ability,
-        ehcp,
-        send,
-        ppg,
-        mustBeWithStudentName,
-        preferredFriendNames,
-        blacklistedStudentNames,
-        isValid: errors.length === 0 && name.length > 0,
-        errors,
-      });
-    }
-
-    const importNames = new Set(
-      rows.map((r) => r.name.toLowerCase().trim()).filter(Boolean)
-    );
-    const existingNames = new Set(students.map((s) => s.name.toLowerCase().trim()));
-    const targetUsage = new Map<string, number>();
-    rows.forEach((row) => {
-      if (!row.mustBeWithStudentName) return;
-      const targetKey = row.mustBeWithStudentName.toLowerCase().trim();
-      targetUsage.set(targetKey, (targetUsage.get(targetKey) || 0) + 1);
-    });
-
-    rows.forEach((row) => {
-      if (!row.mustBeWithStudentName) return;
-
-      const sourceKey = row.name.toLowerCase().trim();
-      const targetKey = row.mustBeWithStudentName.toLowerCase().trim();
-      if (sourceKey === targetKey) {
-        row.errors.push('Must Be With cannot reference the same student');
-      }
-
-      const targetExists = importNames.has(targetKey) || existingNames.has(targetKey);
-      if (!targetExists) {
-        row.errors.push(`Must Be With target "${row.mustBeWithStudentName}" not found`);
-      }
-
-      if ((targetUsage.get(targetKey) || 0) > 1) {
-        row.errors.push('Multiple students cannot share the same Must Be With target in one import');
-      }
-
-      if (row.blacklistedStudentNames.some((n) => n.toLowerCase().trim() === targetKey)) {
-        row.errors.push('Must Be With target cannot also be blacklisted');
-      }
-
-      row.isValid = row.errors.length === 0 && row.name.length > 0;
-    });
-
-    setParsedRows(rows);
-  }, [students]);
-
-  // Simple CSV line parser that handles quoted values
-  const parseCSVLine = (line: string): string[] => {
-    const values: string[] = [];
-    let current = '';
-    let inQuotes = false;
-
-    for (let i = 0; i < line.length; i++) {
-      const char = line[i];
-      if (char === '"') {
-        inQuotes = !inQuotes;
-      } else if (char === ',' && !inQuotes) {
-        values.push(current.trim());
-        current = '';
-      } else {
-        current += char;
-      }
-    }
-    values.push(current.trim());
-    return values;
-  };
+  const [preview, setPreview] = useState<{ students: number; classes: number } | null>(null);
+  const [pendingFile, setPendingFile] = useState<unknown>(null);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    setError('');
+    setPreview(null);
+    setPendingFile(null);
+
     const reader = new FileReader();
     reader.onload = (event) => {
-      const content = event.target?.result as string;
-      setCsvContent(content);
-      parseCSV(content);
+      try {
+        const raw = JSON.parse(event.target?.result as string);
+        const parsed = validateAndParseState(raw);
+        setPreview({ students: parsed.students.length, classes: parsed.classes.length });
+        setPendingFile(parsed);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to read file.');
+      }
     };
     reader.readAsText(file);
   };
 
   const handleImport = () => {
-    const validRows = parsedRows.filter((r) => r.isValid);
-    if (validRows.length === 0) {
-      setError('No valid rows to import');
-      return;
-    }
+    if (!pendingFile) return;
 
     try {
-      importStudents(
-        validRows.map((r) => ({
-          name: r.name,
-          gender: r.gender,
-          isEAL: r.isEAL,
-          behavior: r.behavior,
-          ability: r.ability,
-          ehcp: r.ehcp,
-          send: r.send,
-          ppg: r.ppg,
-          mustBeWithStudentName: r.mustBeWithStudentName || undefined,
-          preferredFriendNames: r.preferredFriendNames,
-          blacklistedStudentNames: r.blacklistedStudentNames,
-        }))
-      );
+      const parsed = validateAndParseState(pendingFile);
+
+      // Replace all state — no migration
+      useStudentStore.setState({ students: parsed.students });
+      useClassStore.setState({
+        classes: parsed.classes,
+        sortingConfig: parsed.sortingConfig,
+        lastSortingResult: null,
+      });
 
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Import failed');
+      setError(err instanceof Error ? err.message : 'Import failed.');
     }
   };
 
-  const validCount = parsedRows.filter((r) => r.isValid).length;
-  const invalidCount = parsedRows.filter((r) => !r.isValid).length;
-
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-[90vh] flex flex-col">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">Import Pupils from CSV</h3>
+          <h3 className="text-lg font-medium text-gray-900">Import</h3>
         </div>
 
-        <div className="p-6 space-y-4 flex-1 overflow-auto">
-          {/* File upload */}
+        <div className="p-6 space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Upload CSV file
+              Upload JSON file
             </label>
             <input
               type="file"
-              accept=".csv"
+              accept=".json"
               onChange={handleFileUpload}
               className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
             />
           </div>
 
-          {/* Format help */}
-          <div className="bg-gray-50 rounded-md p-4 text-sm">
-            <p className="font-medium text-gray-700 mb-2">CSV format</p>
-            <p className="text-gray-600 mb-2">
-              Required column: <code className="bg-gray-200 px-1 rounded">Name</code>
-            </p>
-            <p className="text-gray-600 mb-2">
-              Optional columns: <code className="bg-gray-200 px-1 rounded">Gender</code> (M/F),{' '}
-              <code className="bg-gray-200 px-1 rounded">EAL</code> (Yes/No),{' '}
-              <code className="bg-gray-200 px-1 rounded">Behavior</code> (1/2/3),{' '}
-              <code className="bg-gray-200 px-1 rounded">Ability</code> (1/2/3),{' '}
-              <code className="bg-gray-200 px-1 rounded">EHCP</code> or{' '}
-              <code className="bg-gray-200 px-1 rounded">ECHP</code> (Yes/No),{' '}
-              <code className="bg-gray-200 px-1 rounded">SEND</code> (Yes/No),{' '}
-              <code className="bg-gray-200 px-1 rounded">PPG</code> (Yes/No),{' '}
-              <code className="bg-gray-200 px-1 rounded">Must Be With</code> (one pupil name),{' '}
-              <code className="bg-gray-200 px-1 rounded">Preferred Friends</code> (names separated by ; or |),{' '}
-              <code className="bg-gray-200 px-1 rounded">Blacklist</code> (names separated by ; or |)
-            </p>
-            <p className="text-gray-500 text-xs">
-              Tip: the preview below will show which rows are ready to import and which ones need fixing.
-            </p>
+          <div className="bg-amber-50 border border-amber-200 rounded-md px-4 py-3 text-sm text-amber-800">
+            This will replace all current pupils, classes, and sorting settings.
           </div>
 
           {error && (
@@ -313,72 +84,14 @@ export function ImportDialog({ onClose }: Props) {
             </div>
           )}
 
-          {/* Preview */}
-          {parsedRows.length > 0 && (
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-sm font-medium text-gray-700">Preview</p>
-                <p className="text-sm text-gray-500">
-                  <span className="text-green-600">{validCount} valid</span>
-                  {invalidCount > 0 && (
-                    <span className="text-red-600 ml-2">{invalidCount} invalid</span>
-                  )}
-                </p>
-              </div>
-              <div className="border border-gray-200 rounded-md overflow-hidden max-h-64 overflow-y-auto">
-                <table className="min-w-full divide-y divide-gray-200 text-sm">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Name</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Gender</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">EAL</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Behavior</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Ability</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">EHCP</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">SEND</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">PPG</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Must Be With</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Friends</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {parsedRows.slice(0, 20).map((row, i) => (
-                      <tr key={i} className={row.isValid ? '' : 'bg-red-50'}>
-                        <td className="px-3 py-2">{row.name || '-'}</td>
-                        <td className="px-3 py-2">{row.gender === 'male' ? 'M' : 'F'}</td>
-                        <td className="px-3 py-2">{row.isEAL ? 'Yes' : 'No'}</td>
-                        <td className="px-3 py-2">{row.behavior}</td>
-                        <td className="px-3 py-2">{row.ability}</td>
-                        <td className="px-3 py-2">{row.ehcp ? 'Yes' : 'No'}</td>
-                        <td className="px-3 py-2">{row.send ? 'Yes' : 'No'}</td>
-                        <td className="px-3 py-2">{row.ppg ? 'Yes' : 'No'}</td>
-                        <td className="px-3 py-2">{row.mustBeWithStudentName || '-'}</td>
-                        <td className="px-3 py-2">{row.preferredFriendNames.join(', ') || '-'}</td>
-                        <td className="px-3 py-2">
-                          {row.isValid ? (
-                            <span className="text-green-600">Valid</span>
-                          ) : (
-                            <span className="text-red-600" title={row.errors.join(', ')}>
-                              Invalid
-                            </span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                {parsedRows.length > 20 && (
-                  <p className="px-3 py-2 text-sm text-gray-500 bg-gray-50">
-                    ...and {parsedRows.length - 20} more rows
-                  </p>
-                )}
-              </div>
+          {preview && (
+            <div className="bg-green-50 border border-green-200 rounded-md px-4 py-3 text-sm text-green-800">
+              Ready to import: <strong>{preview.students}</strong> pupils and{' '}
+              <strong>{preview.classes}</strong> classes.
             </div>
           )}
         </div>
 
-        {/* Actions */}
         <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
           <button
             type="button"
@@ -390,10 +103,10 @@ export function ImportDialog({ onClose }: Props) {
           <button
             type="button"
             onClick={handleImport}
-            disabled={validCount === 0}
+            disabled={!pendingFile}
             className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Import {validCount} Pupil{validCount !== 1 ? 's' : ''}
+            Import
           </button>
         </div>
       </div>

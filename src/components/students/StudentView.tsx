@@ -4,23 +4,25 @@ import { AddStudentForm } from './AddStudentForm';
 import { ImportDialog } from './ImportDialog';
 import { ConfirmDialog } from '../shared/ConfirmDialog';
 import { useStudentStore } from '../../stores';
-import { exportStudentsCSV } from '../../utils/exportUtils';
+import { useClassStore } from '../../stores';
+import { exportState } from '../../utils/jsonIO';
 
 export function StudentView() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
-  const { students, deleteAllStudents, getStudentById } = useStudentStore();
+  const { students, deleteAllStudents } = useStudentStore();
+  const { classes, sortingConfig } = useClassStore();
 
   return (
     <div className="space-y-4">
       {/* Toolbar */}
       <div className="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <p className="text-sm font-medium uppercase tracking-[0.18em] text-sky-700">Step 1</p>
+          <p className="text-sm font-medium uppercase tracking-[0.18em] text-sky-700">Step 2</p>
           <h2 className="mt-2 text-2xl font-semibold text-slate-900">Add your pupils</h2>
           <p className="mt-2 text-sm text-slate-600">
-            Start with a CSV import if you already have a class list, or add pupils one by one. You can still edit every detail later.
+            Import from a saved file or add pupils one by one. You can still edit every detail later.
           </p>
           <p className="mt-2 text-sm text-slate-500">{students.length} pupils currently loaded</p>
         </div>
@@ -31,19 +33,21 @@ export function StudentView() {
           >
             Add Pupil
           </button>
-          {students.length > 0 && (
+          {(students.length > 0 || classes.length > 0) && (
             <button
-              onClick={() => exportStudentsCSV(students, getStudentById)}
+              onClick={() => exportState(students, classes, sortingConfig)}
               className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              title="Save all pupils and classes as a .json file"
             >
-              Export CSV
+              Export
             </button>
           )}
           <button
             onClick={() => setShowImport(true)}
             className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            title="Load pupils and classes from a .json file"
           >
-            Import CSV
+            Import
           </button>
           {students.length > 0 && (
             <button
@@ -76,14 +80,14 @@ export function StudentView() {
           </svg>
           <h3 className="mt-4 text-lg font-semibold text-slate-900">No pupils added yet</h3>
           <p className="mt-2 text-sm text-slate-600">
-            Import your pupil list from CSV for the quickest start, or add pupils one at a time if you are building the list manually.
+            Import from a saved file for the quickest start, or add pupils one at a time if you are building the list manually.
           </p>
           <div className="mt-6 flex justify-center gap-3">
             <button
               onClick={() => setShowImport(true)}
               className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
             >
-              Import CSV
+              Import
             </button>
             <button
               onClick={() => setShowAddForm(true)}
