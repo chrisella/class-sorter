@@ -12,7 +12,7 @@ interface UIState {
 }
 
 export const useUIStore = create<UIState>((set) => ({
-  currentView: 'students',
+  currentView: 'classes',
   setView: (view) => set({ currentView: view }),
   isSorting: false,
   setIsSorting: (sorting) => set({ isSorting: sorting }),
