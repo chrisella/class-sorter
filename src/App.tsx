@@ -1,9 +1,11 @@
+import { useEffect, useRef } from 'react';
 import { useClassStore, useStudentStore, useUIStore } from './stores';
 import { StudentView } from './components/students/StudentView';
 import { ClassesView } from './components/classes/ClassesView';
 import { SortingView } from './components/sorting/SortingView';
 import { ResultsView } from './components/results/ResultsView';
 import { UpdateBanner } from './components/UpdateBanner';
+import { startTour, hasSeen } from './utils/tour';
 
 type View = 'students' | 'classes' | 'sorting' | 'results';
 
@@ -18,6 +20,14 @@ function App() {
   const { currentView, setView } = useUIStore();
   const { students } = useStudentStore();
   const { classes } = useClassStore();
+
+  const tourStarted = useRef(false);
+  useEffect(() => {
+    if (!hasSeen() && !tourStarted.current) {
+      tourStarted.current = true;
+      setTimeout(startTour, 500);
+    }
+  }, []);
 
   const hasPupils = students.length > 0;
   const hasClasses = classes.length > 0;
@@ -71,10 +81,19 @@ function App() {
               </p>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-3 xl:min-w-[24rem]">
-              <HeaderStat label="Pupils" value={students.length.toString()} />
-              <HeaderStat label="Classes" value={classes.length.toString()} />
-              <HeaderStat label="Status" value={hasResults ? 'Ready to review' : hasPupils && hasClasses ? 'Ready to create groups' : 'Setup needed'} />
+            <div className="flex items-start gap-3">
+              <div className="grid gap-3 sm:grid-cols-3 xl:min-w-[24rem]">
+                <HeaderStat label="Pupils" value={students.length.toString()} />
+                <HeaderStat label="Classes" value={classes.length.toString()} />
+                <HeaderStat label="Status" value={hasResults ? 'Ready to review' : hasPupils && hasClasses ? 'Ready to create groups' : 'Setup needed'} />
+              </div>
+              <button
+                onClick={startTour}
+                title="Start guided tour"
+                className="flex-shrink-0 rounded-full border border-slate-200 bg-slate-50 p-2 text-sm font-semibold text-slate-500 hover:border-slate-300 hover:bg-white hover:text-slate-700"
+              >
+                ?
+              </button>
             </div>
           </div>
 

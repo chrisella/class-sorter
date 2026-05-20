@@ -311,6 +311,7 @@ export function SortingView() {
 
       <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
         <button
+          id="tour-sort-btn"
           onClick={handleSort}
           disabled={!canSort || isSorting}
           className="w-full rounded-2xl bg-sky-600 px-6 py-3 text-sm font-medium text-white hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"

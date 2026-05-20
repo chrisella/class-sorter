@@ -43,6 +43,7 @@ export function StudentView() {
             </button>
           )}
           <button
+            id="tour-import-btn"
             onClick={() => setShowImport(true)}
             className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
             title="Load pupils and classes from a .json file"

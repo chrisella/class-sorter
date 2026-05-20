@@ -355,7 +355,7 @@ export function ResultsView() {
 
   if (assignedStudents.length === 0) {
     return (
-      <div className="rounded-3xl border border-slate-200 bg-white px-8 py-14 text-center shadow-sm">
+      <div id="tour-results-section" className="rounded-3xl border border-slate-200 bg-white px-8 py-14 text-center shadow-sm">
         <svg
           className="mx-auto h-12 w-12 text-slate-400"
           fill="none"
