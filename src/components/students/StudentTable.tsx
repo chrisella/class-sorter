@@ -38,6 +38,15 @@ export function StudentTable() {
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [deletingStudent, setDeletingStudent] = useState<Student | null>(null);
   const [sorting, setSorting] = useState<SortingState>([]);
+  const [search, setSearch] = useState('');
+
+  const filteredStudents = useMemo(
+    () =>
+      search.trim()
+        ? students.filter((s) => s.name.toLowerCase().includes(search.toLowerCase()))
+        : students,
+    [students, search]
+  );
 
   const columns = useMemo(
     () => [
@@ -268,7 +277,7 @@ export function StudentTable() {
   );
 
   const table = useReactTable({
-    data: students,
+    data: filteredStudents,
     columns,
     state: { sorting },
     onSortingChange: setSorting,
@@ -279,6 +288,26 @@ export function StudentTable() {
   return (
     <>
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="px-4 py-2 border-b border-gray-200">
+          <div className="relative w-56">
+            <svg
+              className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
+            </svg>
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search pupils…"
+              className="w-full rounded-md border border-gray-300 py-1.5 pl-8 pr-3 text-sm text-gray-900 placeholder-gray-400 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+            />
+          </div>
+        </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
