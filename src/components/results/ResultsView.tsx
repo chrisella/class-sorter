@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { useClassStore, useStudentStore } from '../../stores';
 import { sourceClassColorMap } from '../../utils/sourceClassColors';
 import { calculateStudentSatisfaction, getAssignmentInsights } from '../../utils/sortingAlgorithm';
-import { exportToCSV, exportToPDF, sortStudentsAlphabetically } from '../../utils/exportUtils';
+import { exportToCSV, exportToExcel, exportToPDF, sortStudentsAlphabetically } from '../../utils/exportUtils';
 import type { Student, ClassStatistics } from '../../types';
 
 interface FriendsTooltipProps {
@@ -471,6 +471,13 @@ export function ResultsView() {
               className="rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
             >
               Export CSV
+            </button>
+            <button
+              type="button"
+              onClick={() => exportToExcel(students, classes, getStudentById)}
+              className="rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            >
+              Export Excel
             </button>
             <button
               type="button"

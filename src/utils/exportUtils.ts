@@ -1,3 +1,4 @@
+import ExcelJS from 'exceljs';
 import type { Student, Class, ClassStatistics } from '../types';
 
 export function sortStudentsAlphabetically(students: Student[]): Student[] {
@@ -323,6 +324,155 @@ function generatePDFHTML(
     </body>
     </html>
   `;
+}
+
+export async function exportToExcel(
+  students: Student[],
+  classes: Class[],
+  getStudentById: (id: string) => Student | undefined
+): Promise<void> {
+  const workbook = new ExcelJS.Workbook();
+
+  const headerFill: ExcelJS.Fill = {
+    type: 'pattern',
+    pattern: 'solid',
+    fgColor: { argb: 'FFF5F5F5' },
+  };
+  const headerFont: Partial<ExcelJS.Font> = { bold: true };
+  const headerBorder: Partial<ExcelJS.Borders> = {
+    bottom: { style: 'thin', color: { argb: 'FFDDE1E7' } },
+  };
+
+  for (const cls of classes) {
+    const classStudents = sortStudentsAlphabetically(
+      students.filter((s) => s.assignedClassId === cls.id)
+    );
+
+    const sheetName = cls.name.slice(0, 31);
+    const sheet = workbook.addWorksheet(sheetName);
+
+    sheet.views = [{ state: 'frozen', ySplit: 1, xSplit: 0 }];
+
+    sheet.columns = [
+      { header: 'Name', key: 'name', width: 24 },
+      { header: 'Gender', key: 'gender', width: 9 },
+      { header: 'EAL', key: 'eal', width: 7 },
+      { header: 'Behavior', key: 'behavior', width: 10 },
+      { header: 'Ability', key: 'ability', width: 9 },
+      { header: 'EHCP', key: 'ehcp', width: 7 },
+      { header: 'SEND', key: 'send', width: 7 },
+      { header: 'PPG', key: 'ppg', width: 7 },
+      { header: 'Must Be With', key: 'mustBeWith', width: 20 },
+      { header: 'Preferred Friends', key: 'friends', width: 36 },
+      { header: 'Matched', key: 'matched', width: 10 },
+      { header: 'Keep Apart From', key: 'keepApart', width: 36 },
+    ];
+
+    const headerRow = sheet.getRow(1);
+    headerRow.eachCell((cell) => {
+      cell.font = headerFont;
+      cell.fill = headerFill;
+      cell.border = headerBorder;
+    });
+
+    for (const student of classStudents) {
+      const mustBeWithName = student.mustBeWithStudentId
+        ? getStudentById(student.mustBeWithStudentId)?.name ?? '-'
+        : '-';
+      const friendNames = student.preferredFriends
+        .map((id) => getStudentById(id)?.name)
+        .filter(Boolean)
+        .join('; ') || '-';
+      const friendsInClass = student.preferredFriends.filter((fId) => {
+        const friend = getStudentById(fId);
+        return friend && friend.assignedClassId === cls.id;
+      }).length;
+      const keepApartNames = student.keepApartFrom
+        .map((id) => getStudentById(id)?.name)
+        .filter(Boolean)
+        .join('; ') || '-';
+
+      sheet.addRow({
+        name: student.name,
+        gender: student.gender === 'male' ? 'M' : 'F',
+        eal: student.isEAL ? 'Yes' : 'No',
+        behavior: student.behavior,
+        ability: student.ability,
+        ehcp: student.ehcp ? 'Yes' : 'No',
+        send: student.send ? 'Yes' : 'No',
+        ppg: student.ppg ? 'Yes' : 'No',
+        mustBeWith: mustBeWithName,
+        friends: friendNames,
+        matched: `${friendsInClass}/${student.preferredFriends.length}`,
+        keepApart: keepApartNames,
+      });
+    }
+  }
+
+  // Summary sheet
+  const summary = workbook.addWorksheet('Summary');
+  summary.views = [{ state: 'frozen', ySplit: 1, xSplit: 0 }];
+  summary.columns = [
+    { header: 'Class', key: 'name', width: 20 },
+    { header: 'Teacher', key: 'teacher', width: 20 },
+    { header: 'Total', key: 'total', width: 8 },
+    { header: 'Male', key: 'male', width: 8 },
+    { header: 'Female', key: 'female', width: 8 },
+    { header: 'EAL', key: 'eal', width: 7 },
+    { header: 'EHCP', key: 'ehcp', width: 7 },
+    { header: 'SEND', key: 'send', width: 7 },
+    { header: 'PPG', key: 'ppg', width: 7 },
+    { header: 'S&L', key: 'sl', width: 7 },
+    { header: 'Friend Match %', key: 'friendMatch', width: 15 },
+  ];
+
+  const summaryHeader = summary.getRow(1);
+  summaryHeader.eachCell((cell) => {
+    cell.font = headerFont;
+    cell.fill = headerFill;
+    cell.border = headerBorder;
+  });
+
+  for (const cls of classes) {
+    const classStudents = students.filter((s) => s.assignedClassId === cls.id);
+    const avgSatisfaction =
+      classStudents.length > 0
+        ? classStudents.reduce((sum, s) => {
+            const friendsInClass = s.preferredFriends.filter((fId) => {
+              const friend = getStudentById(fId);
+              return friend && friend.assignedClassId === cls.id;
+            }).length;
+            return sum + (s.preferredFriends.length > 0 ? (friendsInClass / s.preferredFriends.length) * 100 : 100);
+          }, 0) / classStudents.length
+        : 0;
+
+    summary.addRow({
+      name: cls.name,
+      teacher: cls.teacherName || '-',
+      total: classStudents.length,
+      male: classStudents.filter((s) => s.gender === 'male').length,
+      female: classStudents.filter((s) => s.gender === 'female').length,
+      eal: classStudents.filter((s) => s.isEAL).length,
+      ehcp: classStudents.filter((s) => s.ehcp).length,
+      send: classStudents.filter((s) => s.send).length,
+      ppg: classStudents.filter((s) => s.ppg).length,
+      sl: classStudents.filter((s) => s.sl).length,
+      friendMatch: `${avgSatisfaction.toFixed(1)}%`,
+    });
+  }
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'class-assignments.xlsx';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }
 
 function downloadFile(content: string, filename: string, mimeType: string): void {
