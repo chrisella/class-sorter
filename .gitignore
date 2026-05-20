@@ -27,6 +27,7 @@ out
 *.sln
 *.sw?
 
+PLAN.md
 
 **/.claude/*.local.json
 .claude/*.local.json
