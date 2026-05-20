@@ -6,8 +6,9 @@ import {
   getSortedRowModel,
   type SortingState,
   useReactTable,
+  type Column,
 } from '@tanstack/react-table';
-import { useStudentStore } from '../../stores';
+import { useStudentStore, useClassStore } from '../../stores';
 import type { Student } from '../../types';
 import { EditStudentModal } from './EditStudentModal';
 import { ConfirmDialog } from '../shared/ConfirmDialog';
@@ -16,8 +17,24 @@ import { RelationshipCell } from './RelationshipCell';
 
 const columnHelper = createColumnHelper<Student>();
 
+function SortHeader({ column, label }: { column: Column<Student, unknown>; label: string }) {
+  const sortState = column.getIsSorted();
+  const indicator = sortState === 'asc' ? '↑' : sortState === 'desc' ? '↓' : '↕';
+  return (
+    <button
+      type="button"
+      onClick={column.getToggleSortingHandler()}
+      className="inline-flex items-center gap-1 text-xs font-medium text-gray-500 uppercase tracking-wider hover:text-gray-700"
+    >
+      <span>{label}</span>
+      <span className={sortState ? 'text-blue-600' : 'text-gray-400'}>{indicator}</span>
+    </button>
+  );
+}
+
 export function StudentTable() {
   const { students, deleteStudent, updateStudent } = useStudentStore();
+  const { sourceClasses } = useClassStore();
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [deletingStudent, setDeletingStudent] = useState<Student | null>(null);
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -25,33 +42,26 @@ export function StudentTable() {
   const columns = useMemo(
     () => [
       columnHelper.accessor('name', {
-        header: ({ column }) => {
-          const sortState = column.getIsSorted();
-          const indicator = sortState === 'asc' ? '↑' : sortState === 'desc' ? '↓' : '↕';
-
-          return (
-            <button
-              type="button"
-              onClick={column.getToggleSortingHandler()}
-              className="inline-flex items-center gap-1 text-xs font-medium text-gray-500 uppercase tracking-wider hover:text-gray-700"
-            >
-              <span>Name</span>
-              <span className={sortState ? 'text-blue-600' : 'text-gray-400'}>{indicator}</span>
-            </button>
-          );
-        },
+        header: ({ column }) => <SortHeader column={column} label="Name" />,
         enableSorting: true,
         cell: (info) => (
           <span className="font-medium text-gray-900">{info.getValue()}</span>
         ),
       }),
-      columnHelper.display({
+      columnHelper.accessor('sourceClassId', {
         id: 'sourceClass',
-        header: 'Source',
+        header: ({ column }) => <SortHeader column={column} label="Source" />,
+        enableSorting: true,
+        sortingFn: (rowA, rowB) => {
+          const nameA = sourceClasses.find((sc) => sc.id === rowA.original.sourceClassId)?.name ?? '';
+          const nameB = sourceClasses.find((sc) => sc.id === rowB.original.sourceClassId)?.name ?? '';
+          return nameA.localeCompare(nameB);
+        },
         cell: (info) => <SourceClassChip student={info.row.original} />,
       }),
       columnHelper.accessor('gender', {
-        header: 'Gender',
+        header: ({ column }) => <SortHeader column={column} label="Gender" />,
+        enableSorting: true,
         cell: (info) => {
           const student = info.row.original;
           const isMale = info.getValue() === 'male';
@@ -71,7 +81,8 @@ export function StudentTable() {
         },
       }),
       columnHelper.accessor('behavior', {
-        header: 'Behavior',
+        header: ({ column }) => <SortHeader column={column} label="Behavior" />,
+        enableSorting: true,
         cell: (info) => {
           const student = info.row.original;
           const value = info.getValue();
@@ -91,7 +102,8 @@ export function StudentTable() {
         },
       }),
       columnHelper.accessor('ability', {
-        header: 'Ability',
+        header: ({ column }) => <SortHeader column={column} label="Ability" />,
+        enableSorting: true,
         cell: (info) => {
           const student = info.row.original;
           const value = info.getValue();
@@ -111,7 +123,8 @@ export function StudentTable() {
         },
       }),
       columnHelper.accessor('isEAL', {
-        header: 'EAL',
+        header: ({ column }) => <SortHeader column={column} label="EAL" />,
+        enableSorting: true,
         cell: (info) => {
           const student = info.row.original;
           const isEAL = info.getValue();
@@ -131,7 +144,8 @@ export function StudentTable() {
         },
       }),
       columnHelper.accessor('ehcp', {
-        header: 'EHCP',
+        header: ({ column }) => <SortHeader column={column} label="EHCP" />,
+        enableSorting: true,
         cell: (info) => {
           const student = info.row.original;
           const value = info.getValue();
@@ -151,7 +165,8 @@ export function StudentTable() {
         },
       }),
       columnHelper.accessor('send', {
-        header: 'SEND',
+        header: ({ column }) => <SortHeader column={column} label="SEND" />,
+        enableSorting: true,
         cell: (info) => {
           const student = info.row.original;
           const value = info.getValue();
@@ -171,7 +186,8 @@ export function StudentTable() {
         },
       }),
       columnHelper.accessor('ppg', {
-        header: 'PPG',
+        header: ({ column }) => <SortHeader column={column} label="PPG" />,
+        enableSorting: true,
         cell: (info) => {
           const student = info.row.original;
           const value = info.getValue();
@@ -191,7 +207,8 @@ export function StudentTable() {
         },
       }),
       columnHelper.accessor('sl', {
-        header: 'S&L',
+        header: ({ column }) => <SortHeader column={column} label="S&L" />,
+        enableSorting: true,
         cell: (info) => {
           const student = info.row.original;
           const value = info.getValue();
@@ -210,9 +227,10 @@ export function StudentTable() {
           );
         },
       }),
-      columnHelper.display({
+      columnHelper.accessor((row) => row.preferredFriends.length, {
         id: 'friends',
-        header: 'Friends',
+        header: ({ column }) => <SortHeader column={column} label="Friends" />,
+        enableSorting: true,
         cell: (info) => <RelationshipCell student={info.row.original} type="friends" />,
       }),
       columnHelper.display({
@@ -246,7 +264,7 @@ export function StudentTable() {
         ),
       }),
     ],
-    [updateStudent]
+    [updateStudent, sourceClasses]
   );
 
   const table = useReactTable({
