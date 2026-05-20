@@ -3,7 +3,7 @@ import { StudentTable } from './StudentTable';
 import { AddStudentForm } from './AddStudentForm';
 import { ImportDialog } from './ImportDialog';
 import { ConfirmDialog } from '../shared/ConfirmDialog';
-import { useStudentStore } from '../../stores';
+import { useStudentStore, useUIStore } from '../../stores';
 import { useClassStore } from '../../stores';
 import { exportState } from '../../utils/jsonIO';
 
@@ -13,6 +13,7 @@ export function StudentView() {
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const { students, deleteAllStudents } = useStudentStore();
   const { classes, sortingConfig, sourceClasses } = useClassStore();
+  const { tourActive } = useUIStore();
 
   return (
     <div className="space-y-4">
@@ -28,8 +29,10 @@ export function StudentView() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <button
+            id="tour-add-pupil-btn"
             onClick={() => setShowAddForm(true)}
-            className="rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-sky-700"
+            disabled={tourActive}
+            className="rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Add Pupil
           </button>
@@ -43,7 +46,6 @@ export function StudentView() {
             </button>
           )}
           <button
-            id="tour-import-btn"
             onClick={() => setShowImport(true)}
             className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
             title="Load pupils and classes from a .json file"
@@ -63,7 +65,9 @@ export function StudentView() {
 
       {/* Student Table */}
       {students.length > 0 ? (
-        <StudentTable />
+        <div id="tour-students-table">
+          <StudentTable />
+        </div>
       ) : (
         <div className="rounded-3xl border border-slate-200 bg-white py-14 text-center shadow-sm">
           <svg

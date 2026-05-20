@@ -449,7 +449,7 @@ export function ResultsView() {
   };
 
   return (
-    <div className="space-y-4">
+    <div id="tour-results-section" className="space-y-4">
       {/* Compact header */}
       <section className="rounded-3xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -556,7 +556,7 @@ export function ResultsView() {
       )}
 
       {sourceClasses.length > 0 && (
-        <div className="flex items-center gap-2">
+        <div id="tour-property-filter" className="flex items-center gap-2">
           <span className="text-xs font-medium text-slate-500">Row color:</span>
           <div className="inline-flex rounded-lg border border-slate-200 bg-slate-100 p-0.5 text-xs font-medium">
             <button

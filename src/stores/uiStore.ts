@@ -9,6 +9,8 @@ interface UIState {
   setIsSorting: (sorting: boolean) => void;
   sortingProgress: number;
   setSortingProgress: (progress: number) => void;
+  tourActive: boolean;
+  setTourActive: (active: boolean) => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -18,4 +20,6 @@ export const useUIStore = create<UIState>((set) => ({
   setIsSorting: (sorting) => set({ isSorting: sorting }),
   sortingProgress: 0,
   setSortingProgress: (progress) => set({ sortingProgress: progress }),
+  tourActive: false,
+  setTourActive: (active) => set({ tourActive: active }),
 }));

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useClassStore, useStudentStore, useUIStore } from './stores';
 import { StudentView } from './components/students/StudentView';
 import { ClassesView } from './components/classes/ClassesView';
@@ -6,6 +6,7 @@ import { SortingView } from './components/sorting/SortingView';
 import { ResultsView } from './components/results/ResultsView';
 import { UpdateBanner } from './components/UpdateBanner';
 import { startTour, hasSeen } from './utils/tour';
+import { hasDemoData, clearDemoData } from './utils/tourDemoData';
 
 type View = 'students' | 'classes' | 'sorting' | 'results';
 
@@ -20,6 +21,7 @@ function App() {
   const { currentView, setView } = useUIStore();
   const { students } = useStudentStore();
   const { classes } = useClassStore();
+  const [showDemoBanner, setShowDemoBanner] = useState(hasDemoData);
 
   const tourStarted = useRef(false);
   useEffect(() => {
@@ -27,6 +29,12 @@ function App() {
       tourStarted.current = true;
       setTimeout(startTour, 500);
     }
+  }, []);
+
+  useEffect(() => {
+    const update = () => setShowDemoBanner(hasDemoData());
+    window.addEventListener('demo-data-change', update);
+    return () => window.removeEventListener('demo-data-change', update);
   }, []);
 
   const hasPupils = students.length > 0;
@@ -60,6 +68,11 @@ function App() {
       default:
         return <StudentView />;
     }
+  };
+
+  const handleStartFresh = () => {
+    clearDemoData();
+    setView('classes');
   };
 
   return (
@@ -96,6 +109,22 @@ function App() {
               </button>
             </div>
           </div>
+
+          {showDemoBanner && (
+            <div className="mt-6 flex items-center justify-between gap-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
+              <p className="text-sm text-amber-900">
+                <span className="font-semibold">Demo data loaded.</span> Explore the example pupils and groups freely. When you're ready to start for real, click{' '}
+                <span className="font-semibold">Start Fresh</span> to clear everything.
+              </p>
+              <button
+                type="button"
+                onClick={handleStartFresh}
+                className="shrink-0 rounded-xl border border-amber-300 bg-white px-3 py-1.5 text-sm font-medium text-amber-800 hover:bg-amber-100"
+              >
+                Start Fresh
+              </button>
+            </div>
+          )}
 
           <div className="mt-6 grid gap-3 md:grid-cols-4">
             {navItems.map((item) => {
