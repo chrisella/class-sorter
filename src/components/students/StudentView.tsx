@@ -13,7 +13,7 @@ export function StudentView() {
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const { students, deleteAllStudents } = useStudentStore();
   const { classes, sortingConfig, sourceClasses } = useClassStore();
-  const { tourActive } = useUIStore();
+  const { tourActive, tourOpenAddPupil, setTourOpenAddPupil } = useUIStore();
 
   return (
     <div className="space-y-4">
@@ -105,7 +105,9 @@ export function StudentView() {
       )}
 
       {/* Modals */}
-      {showAddForm && <AddStudentForm onClose={() => setShowAddForm(false)} />}
+      {(showAddForm || tourOpenAddPupil) && (
+        <AddStudentForm onClose={() => { setShowAddForm(false); if (tourActive) setTourOpenAddPupil(false); }} />
+      )}
       {showImport && <ImportDialog onClose={() => setShowImport(false)} />}
       {showClearConfirm && (
         <ConfirmDialog

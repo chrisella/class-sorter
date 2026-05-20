@@ -15,6 +15,9 @@ interface TourStep {
   description: string;
 }
 
+// Step index where the Add Pupil dialog is open
+const ADD_PUPIL_DIALOG_STEP = 4;
+
 const tourSteps: TourStep[] = [
   {
     view: null,
@@ -41,7 +44,14 @@ const tourSteps: TourStep[] = [
     element: '#tour-add-pupil-btn',
     title: 'Step 2 — Add Pupils',
     description:
-      'Click <strong>Add Pupil</strong> to open a form where you can fill in all the details: name, gender, EAL status, behaviour and ability ranks, SEND needs, and friendship/keep-apart rules.',
+      'Click <strong>Next</strong> to open the Add Pupil form and see what information you can record for each pupil.',
+  },
+  {
+    // Dialog is open on this step — no element so popover floats above the dialog
+    view: 'students',
+    title: 'The Add Pupil Form',
+    description:
+      'Fill in the pupil\'s name, gender, behaviour and ability ranks, and any additional needs (EAL, EHCP, SEND, PPG, S&amp;L). Use the <strong>friendship</strong> and <strong>keep-apart</strong> fields to record social constraints. Click <strong>Next</strong> to close the form and continue.',
   },
   {
     view: 'students',
@@ -85,8 +95,11 @@ export function startTour() {
     injectDemoData();
   }
 
-  const { setView, setTourActive } = useUIStore.getState();
+  const { setView, setTourActive, setTourOpenAddPupil } = useUIStore.getState();
   setTourActive(true);
+
+  const openDialog = () => setTourOpenAddPupil(true);
+  const closeDialog = () => setTourOpenAddPupil(false);
 
   const driverObj = driver({
     showProgress: true,
@@ -104,13 +117,19 @@ export function startTour() {
         return;
       }
 
+      if (currentIndex === ADD_PUPIL_DIALOG_STEP) closeDialog();
+
       const nextStep = tourSteps[nextIndex];
       const currentStep = tourSteps[currentIndex];
       if (nextStep.view && nextStep.view !== currentStep.view) {
         setView(nextStep.view);
-        setTimeout(() => driverObj.moveNext(), 200);
+        setTimeout(() => {
+          driverObj.moveNext();
+          if (nextIndex === ADD_PUPIL_DIALOG_STEP) openDialog();
+        }, 200);
       } else {
         driverObj.moveNext();
+        if (nextIndex === ADD_PUPIL_DIALOG_STEP) openDialog();
       }
     },
     onPrevClick: () => {
@@ -118,13 +137,19 @@ export function startTour() {
       const prevIndex = currentIndex - 1;
       if (prevIndex < 0) return;
 
+      if (currentIndex === ADD_PUPIL_DIALOG_STEP) closeDialog();
+
       const prevStep = tourSteps[prevIndex];
       const currentStep = tourSteps[currentIndex];
       if (prevStep?.view && prevStep.view !== currentStep.view) {
         setView(prevStep.view);
-        setTimeout(() => driverObj.movePrevious(), 200);
+        setTimeout(() => {
+          driverObj.movePrevious();
+          if (prevIndex === ADD_PUPIL_DIALOG_STEP) openDialog();
+        }, 200);
       } else {
         driverObj.movePrevious();
+        if (prevIndex === ADD_PUPIL_DIALOG_STEP) openDialog();
       }
     },
     onDestroyStarted: () => {
@@ -134,6 +159,7 @@ export function startTour() {
       markSeen();
       activeDriver = null;
       setTourActive(false);
+      closeDialog();
       setView('classes');
     },
   });
