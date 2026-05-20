@@ -1,49 +1,39 @@
 # Class Sorter
 
-A desktop application for teachers to sort students into balanced classes based on various parameters such as preferred friends, blacklisted students, gender balance, and EAL (English as Additional Language) distribution.
+A desktop app for teachers to sort students into balanced classes — handling preferred friends, blacklisted pairs, gender balance, EAL distribution, and SEND/EHCP/PPG needs automatically.
 
-## Tech Stack
+## Download
 
-- **Electron** - Desktop application framework
-- **React 19** - UI framework
-- **TypeScript** - Type safety
-- **Vite** - Build tool and dev server
-- **Tailwind CSS** - Styling
-- **Zustand** - State management
-- **TanStack React Table** - Data tables
+Download the latest installer from the [Releases page](https://github.com/chrisella/class-sorter-new/releases/latest):
 
-## Development
+| Platform | File |
+|----------|------|
+| Windows (installer) | `.exe` (NSIS) |
+| Windows (portable) | `-portable.exe` |
+| Linux | `.AppImage` |
 
-```bash
-# Install dependencies
-npm install
+Run the installer and launch **Class Sorter** from your desktop or Start menu.
 
-# Run in development mode
-npm run dev
+## How it works
 
-# Build for production
-npm run build
-```
+The app walks you through four steps:
 
-## Releasing a new version
+**Step 1 — Classes:** Define the classes you want to create, their target sizes, and teacher names.
 
-Releases are published automatically to GitHub Releases via GitHub Actions when a version tag is pushed. The tag and `package.json` version must match — use `npm version` to keep them in sync:
+**Step 2 — Pupils:** Add your students and their properties — gender, EAL status, behaviour and ability rankings, EHCP/SEND/PPG flags, preferred friends, and any students they must not be placed with.
 
-```bash
-npm version patch   # 1.0.0 → 1.0.1  (bug fixes)
-npm version minor   # 1.0.0 → 1.1.0  (new features)
-npm version major   # 1.0.0 → 2.0.0  (breaking changes)
-```
+You can import a CSV file to populate the list quickly. Export is also supported for backups or transferring data between machines.
 
-This updates `package.json`, commits the change, and creates the git tag in one step. Then push both:
+**Step 3 — Sort:** Run the sorting algorithm. It respects hard constraints (blacklisted pairs are never placed together; must-be-with pairs are always kept together) and optimises soft constraints (friend placement, gender/EAL/behaviour/ability balance) using simulated annealing.
 
-```bash
-git push origin main
-git push origin --tags
-```
+**Step 4 — Results:** View the resulting classes and manually move students between classes if needed. Export to PDF or Excel for sharing.
 
-GitHub Actions will build the app and publish the installer to a new GitHub Release. Existing installs will receive an update prompt on next launch.
+## Screenshots
 
-## Recommended IDE Setup
+> **Note: all data shown in these screenshots is entirely fake test data. No real students are depicted.**
 
-- [VS Code](https://code.visualstudio.com/)
+*(Screenshots coming soon)*
+
+## Updates
+
+Class Sorter checks for updates automatically on launch. When a new version is available you will be prompted to install it.

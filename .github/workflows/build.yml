@@ -23,13 +23,16 @@ jobs:
         with:
           node-version: 20
 
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Run tests
-        run: npm test
+        run: pnpm test
 
       - name: Build and publish
-        run: npm run build -- --publish ${{ startsWith(github.ref, 'refs/tags/v') && 'always' || 'never' }}
+        run: pnpm build -- --publish ${{ startsWith(github.ref, 'refs/tags/v') && 'always' || 'never' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
