@@ -8,8 +8,8 @@ Download the latest installer from the [Releases page](https://github.com/chrise
 
 | Platform | File |
 |----------|------|
-| Windows (installer) | `.exe` (NSIS) |
-| Windows (portable) | `-portable.exe` |
+| Windows (installer) | `Class-Sorter-Setup-x.x.x.exe` |
+| Windows (portable) | `Class-Sorter-x.x.x.exe` |
 | Linux | `.AppImage` |
 
 Run the installer and launch **Class Sorter** from your desktop or Start menu.
@@ -32,7 +32,8 @@ You can import a CSV file to populate the list quickly. Export is also supported
 
 > **Note: all data shown in these screenshots is entirely fake test data. No real students are depicted.**
 
-*(Screenshots coming soon)*
+![Screenshot 1](docs/readme-example-1.png)
+![Screenshot 2](docs/readme-example-2.png)
 
 ## Updates
 
