@@ -51,6 +51,7 @@ export interface SortingConfiguration {
     sourceClassBalance: number;      // Weight for source class distribution (0-0.5)
   };
   maxIterations: number;
+  largerClassId: string | null;
 }
 
 export interface SizeCompliance {

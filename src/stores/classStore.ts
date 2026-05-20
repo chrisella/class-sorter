@@ -23,6 +23,7 @@ interface ClassState {
   getSourceClassById: (id: string) => SourceClass | undefined;
 
   setSortingConfig: (config: Partial<SortingConfiguration>) => void;
+  setLargerClassId: (id: string | null) => void;
   setLastSortingResult: (result: SortingResult | null) => void;
 
   generateDefaultClasses: (count: number, totalStudents: number) => void;
@@ -45,6 +46,7 @@ const defaultSortingConfig: SortingConfiguration = {
     sourceClassBalance: 0.2,
   },
   maxIterations: 10000,
+  largerClassId: null,
 };
 
 export const useClassStore = create<ClassState>()(
@@ -81,6 +83,10 @@ export const useClassStore = create<ClassState>()(
       deleteClass: (id) => {
         set((state) => ({
           classes: state.classes.filter((c) => c.id !== id),
+          sortingConfig:
+            state.sortingConfig.largerClassId === id
+              ? { ...state.sortingConfig, largerClassId: null }
+              : state.sortingConfig,
         }));
       },
 
@@ -141,6 +147,15 @@ export const useClassStore = create<ClassState>()(
       setSortingConfig: (config) => {
         set((state) => ({
           sortingConfig: { ...state.sortingConfig, ...config },
+        }));
+      },
+
+      setLargerClassId: (id) => {
+        set((state) => ({
+          sortingConfig: {
+            ...state.sortingConfig,
+            largerClassId: state.sortingConfig.largerClassId === id ? null : id,
+          },
         }));
       },
 

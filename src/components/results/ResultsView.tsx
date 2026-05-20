@@ -291,7 +291,7 @@ export function ResultsView() {
 
   const assignedStudents = students.filter((student) => student.assignedClassId !== null);
   const activeClassSizeMode = lastSortingResult?.classSizeMode ?? sortingConfig.classSizeMode;
-  const insights = getAssignmentInsights(students, classes, activeClassSizeMode, 'manual_edit');
+  const insights = getAssignmentInsights(students, classes, activeClassSizeMode, 'manual_edit', sortingConfig.largerClassId);
   const currentSizeWarning =
     activeClassSizeMode === 'strict'
       ? !insights.sizeCompliance.isExact

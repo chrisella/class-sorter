@@ -12,7 +12,7 @@ export function StatisticsView() {
   const statistics = useMemo(() => {
     if (assignedStudents.length === 0) return null;
 
-    const insights = getAssignmentInsights(students, classes, activeClassSizeMode, 'manual_edit');
+    const insights = getAssignmentInsights(students, classes, activeClassSizeMode, 'manual_edit', sortingConfig.largerClassId);
     const satisfactionScores = assignedStudents.map((student) =>
       calculateStudentSatisfaction(student, student.assignedClassId!, students)
     );

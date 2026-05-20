@@ -3,11 +3,19 @@ import { useClassStore, useStudentStore } from '../../stores';
 import { ConfirmDialog } from '../shared/ConfirmDialog';
 import { SourceClassSection } from './SourceClassSection';
 import type { Class } from '../../types';
-import { buildTargetSizes } from '../../utils/classSizeUtils';
+import { buildTargetSizes, buildClassTargetMap } from '../../utils/classSizeUtils';
 
 export function ClassesView() {
-  const { classes, addClass, updateClass, deleteClass, deleteAllClasses, generateDefaultClasses } =
-    useClassStore();
+  const {
+    classes,
+    addClass,
+    updateClass,
+    deleteClass,
+    deleteAllClasses,
+    generateDefaultClasses,
+    setLargerClassId,
+    sortingConfig,
+  } = useClassStore();
   const { students } = useStudentStore();
   const [showAddForm, setShowAddForm] = useState(false);
   const [newClassName, setNewClassName] = useState('');
@@ -17,16 +25,16 @@ export function ClassesView() {
   const [deletingClass, setDeletingClass] = useState<Class | null>(null);
   const [showGenerateDialog, setShowGenerateDialog] = useState(false);
   const [generateCount, setGenerateCount] = useState('3');
-  const targetSizes = buildTargetSizes(students.length, classes.length);
+  const classTargetMap = buildClassTargetMap(classes, students.length, sortingConfig.largerClassId);
 
   useEffect(() => {
-    classes.forEach((cls, index) => {
-      const targetSize = targetSizes[index];
+    classes.forEach((cls) => {
+      const targetSize = classTargetMap[cls.id];
       if (targetSize !== undefined && cls.targetSize !== targetSize) {
         updateClass(cls.id, { targetSize });
       }
     });
-  }, [classes, targetSizes, updateClass]);
+  }, [classes, classTargetMap, updateClass]);
 
   const handleAddClass = (e: React.FormEvent) => {
     e.preventDefault();
@@ -152,83 +160,99 @@ export function ClassesView() {
       {/* Classes Grid */}
       {classes.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {classes.map((cls, index) => (
-            <div
-              key={cls.id}
-              className="bg-white rounded-lg border border-gray-200 p-4"
-            >
-              {editingId === cls.id ? (
-                <div className="space-y-3">
-                  <input
-                    type="text"
-                    defaultValue={cls.name}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        updateClass(cls.id, { name: e.currentTarget.value });
-                        setEditingId(null);
-                      } else if (e.key === 'Escape') {
-                        setEditingId(null);
-                      }
-                    }}
-                    autoFocus
-                  />
-                  <input
-                    type="text"
-                    defaultValue={cls.teacherName || ''}
-                    placeholder="Teacher name"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        updateClass(cls.id, { teacherName: e.currentTarget.value || undefined });
-                        setEditingId(null);
-                      } else if (e.key === 'Escape') {
-                        setEditingId(null);
-                      }
-                    }}
-                  />
-                  <div className="flex justify-end">
-                    <button
-                      onClick={() => setEditingId(null)}
-                      className="text-sm text-gray-600 hover:text-gray-800"
-                    >
-                      Done
-                    </button>
+          {classes.map((cls) => {
+            const isLarger = sortingConfig.largerClassId === cls.id;
+            const targetSize = classTargetMap[cls.id] ?? cls.targetSize;
+            return (
+              <div
+                key={cls.id}
+                className={`bg-white rounded-lg border p-4 ${isLarger ? 'border-sky-400 ring-1 ring-sky-300' : 'border-gray-200'}`}
+              >
+                {editingId === cls.id ? (
+                  <div className="space-y-3">
+                    <input
+                      type="text"
+                      defaultValue={cls.name}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          updateClass(cls.id, { name: e.currentTarget.value });
+                          setEditingId(null);
+                        } else if (e.key === 'Escape') {
+                          setEditingId(null);
+                        }
+                      }}
+                      autoFocus
+                    />
+                    <input
+                      type="text"
+                      defaultValue={cls.teacherName || ''}
+                      placeholder="Teacher name"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          updateClass(cls.id, { teacherName: e.currentTarget.value || undefined });
+                          setEditingId(null);
+                        } else if (e.key === 'Escape') {
+                          setEditingId(null);
+                        }
+                      }}
+                    />
+                    <div className="flex justify-end">
+                      <button
+                        onClick={() => setEditingId(null)}
+                        className="text-sm text-gray-600 hover:text-gray-800"
+                      >
+                        Done
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="font-medium text-gray-900">{cls.name}</h3>
-                      {cls.teacherName && (
-                        <p className="text-sm text-gray-500">{cls.teacherName}</p>
+                ) : (
+                  <>
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="font-medium text-gray-900">{cls.name}</h3>
+                        {cls.teacherName && (
+                          <p className="text-sm text-gray-500">{cls.teacherName}</p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setLargerClassId(cls.id)}
+                          title={isLarger ? 'Gets the extra pupil (click to unset)' : 'Mark as gets the extra pupil'}
+                          className={`text-lg leading-none transition-colors ${isLarger ? 'text-sky-500' : 'text-gray-300 hover:text-sky-400'}`}
+                        >
+                          ▲
+                        </button>
+                        <button
+                          onClick={() => setEditingId(cls.id)}
+                          className="text-sm text-blue-600 hover:text-blue-800"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => setDeletingClass(cls)}
+                          className="text-sm text-red-600 hover:text-red-800"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                    <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
+                      <p className="text-sm text-gray-500">
+                        Target size: {targetSize} pupils
+                      </p>
+                      {isLarger && (
+                        <span className="text-xs font-medium text-sky-600 bg-sky-50 px-2 py-0.5 rounded-full">
+                          Gets the extra pupil
+                        </span>
                       )}
                     </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => setEditingId(cls.id)}
-                        className="text-sm text-blue-600 hover:text-blue-800"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => setDeletingClass(cls)}
-                        className="text-sm text-red-600 hover:text-red-800"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                  <div className="mt-3 pt-3 border-t border-gray-100">
-                    <p className="text-sm text-gray-500">
-                      Target size: {targetSizes[index] ?? cls.targetSize} students
-                    </p>
-                  </div>
-                </>
-              )}
-            </div>
-          ))}
+                  </>
+                )}
+              </div>
+            );
+          })}
         </div>
       ) : (
         <div className="rounded-3xl border border-slate-200 bg-white py-14 text-center shadow-sm">

@@ -9,7 +9,7 @@ import type {
   ClassSizeMode,
   SizeCompliance,
 } from '../types';
-import { buildTargetSizes, calculateSizeCompliance } from './classSizeUtils';
+import { buildTargetSizes, buildClassTargetMap, calculateSizeCompliance } from './classSizeUtils';
 
 type Assignment = Map<string, string>;
 
@@ -46,7 +46,7 @@ async function runFlexibleSorting(
 ): Promise<SortingResult> {
   return new Promise((resolve, reject) => {
     try {
-      let currentAssignment = generateFlexibleInitialAssignment(students, classes);
+      let currentAssignment = generateFlexibleInitialAssignment(students, classes, config.largerClassId);
 
       if (!validateFlexibleHardConstraints(students, currentAssignment)) {
         reject(
@@ -79,7 +79,7 @@ async function runFlexibleSorting(
         const chunkEnd = Math.min(iteration + chunkSize, config.maxIterations);
 
         while (iteration < chunkEnd && temperature > minTemperature) {
-          const neighbor = generateFlexibleNeighbor(currentAssignment, students, classes);
+          const neighbor = generateFlexibleNeighbor(currentAssignment, students, classes, config.largerClassId);
 
           if (validateFlexibleHardConstraints(students, neighbor)) {
             const neighborEvaluation = evaluateAssignment(
@@ -195,8 +195,8 @@ async function runStrictSorting(
         if (iteration < config.maxIterations && temperature > minTemperature) {
           setTimeout(processChunk, 0);
         } else {
-          const mappedAssignment = mapStrictAssignmentToClasses(bestAssignment, classes, buckets);
-          const mappedSizeCompliance = calculateSizeCompliance(classes, mappedAssignment, students.length);
+          const mappedAssignment = mapStrictAssignmentToClasses(bestAssignment, classes, buckets, config.largerClassId);
+          const mappedSizeCompliance = calculateSizeCompliance(classes, mappedAssignment, students.length, config.largerClassId);
           if (!mappedSizeCompliance.isExact) {
             reject(new Error('Strict sizing failed to preserve the exact class-size split.'));
             return;
@@ -244,11 +244,15 @@ function safeWeight(value: number | undefined, fallback: number): number {
   return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
 }
 
-function generateFlexibleInitialAssignment(students: Student[], classes: Class[]): Assignment {
+function generateFlexibleInitialAssignment(
+  students: Student[],
+  classes: Class[],
+  largerClassId?: string | null
+): Assignment {
   const assignment = new Map<string, string>();
   const classSizes = new Map<string, number>();
-  const targetSizes = buildTargetSizes(students.length, classes.length);
-  const targetSizeByClass = new Map(classes.map((cls, index) => [cls.id, targetSizes[index] ?? 0]));
+  const classTargetMap = buildClassTargetMap(classes, students.length, largerClassId);
+  const targetSizeByClass = new Map(classes.map((cls) => [cls.id, classTargetMap[cls.id] ?? 0]));
   classes.forEach((cls) => classSizes.set(cls.id, 0));
 
   const studentMap = new Map(students.map((student) => [student.id, student]));
@@ -449,13 +453,14 @@ function validateFlexibleHardConstraints(students: Student[], assignment: Assign
 function generateFlexibleNeighbor(
   assignment: Assignment,
   students: Student[],
-  classes: Class[]
+  classes: Class[],
+  largerClassId?: string | null
 ): Assignment {
   const neighbor = new Map(assignment);
   const units = buildStudentUnits(students, true);
   if (units.length === 0 || classes.length === 0) return neighbor;
 
-  const sizeCompliance = calculateSizeCompliance(classes, neighbor, students.length);
+  const sizeCompliance = calculateSizeCompliance(classes, neighbor, students.length, largerClassId);
   const oversizedClasses = classes
     .filter((cls) => (sizeCompliance.classActualSizes[cls.id] ?? 0) > (sizeCompliance.classTargets[cls.id] ?? 0))
     .map((cls) => cls.id);
@@ -517,18 +522,30 @@ function generateStrictNeighbor(assignment: Assignment, students: Student[]): As
 function mapStrictAssignmentToClasses(
   assignment: Assignment,
   classes: Class[],
-  buckets: Class[]
+  buckets: Class[],
+  largerClassId?: string | null
 ): Assignment {
+  const sortedBuckets = buckets.slice().sort((a, b) => a.targetSize - b.targetSize);
+
+  // If largerClassId is set, move it to the end of the classes array so it maps
+  // to the last (largest) bucket after sorting.
+  let orderedClasses = classes;
+  if (largerClassId) {
+    const idx = classes.findIndex((c) => c.id === largerClassId);
+    if (idx !== -1) {
+      orderedClasses = [...classes];
+      const [larger] = orderedClasses.splice(idx, 1);
+      if (larger) orderedClasses.push(larger);
+    }
+  }
+
   const bucketToClass = new Map<string, string>();
-  buckets
-    .slice()
-    .sort((a, b) => a.targetSize - b.targetSize)
-    .forEach((bucket, index) => {
-      const cls = classes[index];
-      if (cls) {
-        bucketToClass.set(bucket.id, cls.id);
-      }
-    });
+  sortedBuckets.forEach((bucket, index) => {
+    const cls = orderedClasses[index];
+    if (cls) {
+      bucketToClass.set(bucket.id, cls.id);
+    }
+  });
 
   const mapped = new Map<string, string>();
   assignment.forEach((bucketId, studentId) => {
@@ -581,7 +598,7 @@ function evaluateAssignment(
   config: SortingConfiguration,
   scope: 'auto_sort' | 'manual_edit'
 ): EvaluationResult {
-  const sizeCompliance = calculateSizeCompliance(classes, assignment, students.length);
+  const sizeCompliance = calculateSizeCompliance(classes, assignment, students.length, config.largerClassId);
   const violations = collectConstraintViolations(
     students,
     classes,
@@ -991,10 +1008,11 @@ export function getAssignmentInsights(
   students: Student[],
   classes: Class[],
   classSizeMode: ClassSizeMode,
-  scope: 'auto_sort' | 'manual_edit' = 'manual_edit'
+  scope: 'auto_sort' | 'manual_edit' = 'manual_edit',
+  largerClassId?: string | null
 ) {
   const assignment = buildAssignmentFromStudents(students);
-  const sizeCompliance = calculateSizeCompliance(classes, assignment, students.length);
+  const sizeCompliance = calculateSizeCompliance(classes, assignment, students.length, largerClassId);
   const violations = collectConstraintViolations(
     students,
     classes,
