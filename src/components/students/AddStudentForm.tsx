@@ -208,7 +208,7 @@ export function AddStudentForm({ onClose }: Props) {
             <StudentSelect
               students={students}
               selectedIds={preferredFriends}
-              excludeIds={keepApartFrom}
+              excludeIds={[...keepApartFrom, ...mustBeWith]}
               onChange={setPreferredFriends}
               maxSelections={3}
               placeholder="Search for pupils..."

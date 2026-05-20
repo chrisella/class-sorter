@@ -64,6 +64,13 @@ export function RelationshipCell({ student, type }: Props) {
             students={students}
             selectedIds={ids}
             excludeSelf={student.id}
+            excludeIds={
+              type === 'friends'
+                ? [...(student.keepApartFrom ?? []), ...(student.mustBeWithStudentId ? [student.mustBeWithStudentId] : [])]
+                : type === 'keepApart'
+                  ? [...student.preferredFriends, ...(student.mustBeWithStudentId ? [student.mustBeWithStudentId] : [])]
+                  : student.keepApartFrom ?? []
+            }
             onChange={handleChange}
             maxSelections={
               type === 'friends' ? 3 : type === 'mustBeWith' ? 1 : undefined

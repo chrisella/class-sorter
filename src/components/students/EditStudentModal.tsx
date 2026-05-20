@@ -224,7 +224,7 @@ export function EditStudentModal({ student, onClose }: Props) {
             <StudentSelect
               students={students}
               selectedIds={preferredFriends}
-              excludeIds={keepApartFrom}
+              excludeIds={[...keepApartFrom, ...mustBeWith]}
               excludeSelf={student.id}
               onChange={setPreferredFriends}
               maxSelections={3}
