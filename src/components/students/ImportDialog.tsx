@@ -9,7 +9,7 @@ interface Props {
 export function ImportDialog({ onClose }: Props) {
   const { students: _existingStudents } = useStudentStore();
   const [error, setError] = useState('');
-  const [preview, setPreview] = useState<{ students: number; classes: number } | null>(null);
+  const [preview, setPreview] = useState<{ students: number; sourceClasses: number; classes: number } | null>(null);
   const [pendingFile, setPendingFile] = useState<unknown>(null);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -25,7 +25,7 @@ export function ImportDialog({ onClose }: Props) {
       try {
         const raw = JSON.parse(event.target?.result as string);
         const parsed = validateAndParseState(raw);
-        setPreview({ students: parsed.students.length, classes: parsed.classes.length });
+        setPreview({ students: parsed.students.length, sourceClasses: parsed.sourceClasses.length, classes: parsed.classes.length });
         setPendingFile(parsed);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to read file.');
@@ -87,8 +87,11 @@ export function ImportDialog({ onClose }: Props) {
 
           {preview && (
             <div className="bg-green-50 border border-green-200 rounded-md px-4 py-3 text-sm text-green-800">
-              Ready to import: <strong>{preview.students}</strong> pupils and{' '}
-              <strong>{preview.classes}</strong> classes.
+              Ready to import <strong>{preview.students}</strong> pupils
+              {preview.sourceClasses > 0 && (
+                <> from <strong>{preview.sourceClasses}</strong> source {preview.sourceClasses === 1 ? 'class' : 'classes'}</>
+              )}
+              {' '}into <strong>{preview.classes}</strong> destination {preview.classes === 1 ? 'class' : 'classes'}.
             </div>
           )}
         </div>
