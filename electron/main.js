@@ -1,6 +1,42 @@
-const { app, BrowserWindow, dialog, ipcMain, Menu } = require('electron');
+const { app, BrowserWindow, dialog, ipcMain, Menu, shell } = require('electron');
 const path = require('path');
+const https = require('https');
 const { autoUpdater } = require('electron-updater');
+
+const GITHUB_OWNER = 'chrisella';
+const GITHUB_REPO = 'class-sorter-new';
+
+function fetchLatestRelease() {
+  return new Promise((resolve) => {
+    const options = {
+      hostname: 'api.github.com',
+      path: `/repos/${GITHUB_OWNER}/${GITHUB_REPO}/releases/latest`,
+      headers: { 'User-Agent': 'class-sorter-app' },
+    };
+    https.get(options, (res) => {
+      let data = '';
+      res.on('data', (chunk) => (data += chunk));
+      res.on('end', () => {
+        try {
+          const release = JSON.parse(data);
+          resolve({ version: release.tag_name?.replace(/^v/, ''), url: release.html_url });
+        } catch {
+          resolve(null);
+        }
+      });
+    }).on('error', () => resolve(null));
+  });
+}
+
+function isNewer(latest, current) {
+  const a = latest.split('.').map(Number);
+  const b = current.split('.').map(Number);
+  for (let i = 0; i < 3; i++) {
+    if ((a[i] || 0) > (b[i] || 0)) return true;
+    if ((a[i] || 0) < (b[i] || 0)) return false;
+  }
+  return false;
+}
 
 let mainWindow;
 let checkingForUpdate = false;
@@ -35,13 +71,33 @@ function buildMenu() {
       submenu: [
         {
           label: 'Check for Updates',
-          click: () => {
+          click: async () => {
             if (isPortable) {
-              dialog.showMessageBox(mainWindow, {
-                type: 'info',
-                title: 'Portable version',
-                message: 'Auto-updates are not supported in the portable version. Download the latest installer from GitHub to update.',
-              });
+              const release = await fetchLatestRelease();
+              if (!release) {
+                dialog.showMessageBox(mainWindow, {
+                  type: 'error',
+                  title: 'Update check failed',
+                  message: 'Could not reach GitHub to check for updates.',
+                });
+                return;
+              }
+              if (isNewer(release.version, app.getVersion())) {
+                const { response } = await dialog.showMessageBox(mainWindow, {
+                  type: 'info',
+                  title: 'Update available',
+                  message: `Version ${release.version} is available (you have ${app.getVersion()}).`,
+                  buttons: ['Download', 'Later'],
+                  defaultId: 0,
+                });
+                if (response === 0) shell.openExternal(release.url);
+              } else {
+                dialog.showMessageBox(mainWindow, {
+                  type: 'info',
+                  title: 'No update available',
+                  message: `Class Sorter ${app.getVersion()} is the latest version.`,
+                });
+              }
               return;
             }
             if (checkingForUpdate) return;
@@ -107,12 +163,25 @@ function setupAutoUpdater() {
   autoUpdater.checkForUpdatesAndNotify();
 }
 
+ipcMain.on('open-external', (_event, url) => {
+  shell.openExternal(url);
+});
+
+async function checkPortableUpdateSilently() {
+  const release = await fetchLatestRelease();
+  if (release && isNewer(release.version, app.getVersion())) {
+    mainWindow.webContents.send('update-available', { version: release.version, url: release.url });
+  }
+}
+
 app.whenReady().then(() => {
   createWindow();
   buildMenu();
 
   if (app.isPackaged && !isPortable) {
     setupAutoUpdater();
+  } else if (isPortable) {
+    mainWindow.webContents.on('did-finish-load', () => checkPortableUpdateSilently());
   }
 
   app.on('activate', () => {

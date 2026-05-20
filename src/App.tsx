@@ -3,6 +3,7 @@ import { StudentView } from './components/students/StudentView';
 import { ClassesView } from './components/classes/ClassesView';
 import { SortingView } from './components/sorting/SortingView';
 import { ResultsView } from './components/results/ResultsView';
+import { UpdateBanner } from './components/UpdateBanner';
 
 type View = 'students' | 'classes' | 'sorting' | 'results';
 
@@ -53,6 +54,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900">
+      <UpdateBanner />
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto max-w-7xl px-6 py-6">
           <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
