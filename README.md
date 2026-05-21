@@ -10,7 +10,6 @@ Download the latest installer from the [Releases page](https://github.com/chrise
 |----------|------|
 | Windows (installer) | `Class-Sorter-Setup-x.x.x.exe` |
 | Windows (portable) | `Class-Sorter-x.x.x.exe` |
-| Linux | `.AppImage` |
 
 Run the installer and launch **Class Sorter** from your desktop or Start menu.
 
