@@ -37,7 +37,7 @@ const tourSteps: TourStep[] = [
     element: '#tour-classes-section',
     title: 'Step 1 — New Classes',
     description:
-      'Define the classes you\'re <em>creating</em>. Target sizes are calculated automatically from the number of pupils. Use the <strong>▲</strong> button on a class to mark which one gets the extra pupil if numbers don\'t divide evenly.',
+      'Define the classes you\'re <em>creating</em>. Target sizes are calculated automatically from the number of pupils. Use the <strong>+1</strong> button on a class card to mark which one gets the extra pupil if numbers don\'t divide evenly.',
   },
   {
     view: 'students',

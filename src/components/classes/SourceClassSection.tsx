@@ -50,7 +50,10 @@ export function SourceClassSection() {
     <div id="tour-source-section" className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-base font-semibold text-slate-900">Source classes</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="text-base font-semibold text-slate-900">Source classes</h3>
+            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-400">Optional</span>
+          </div>
           <p className="mt-1 text-sm text-slate-500">
             The classes pupils are currently in. Used to spread them evenly across new groups.
           </p>
