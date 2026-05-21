@@ -4,7 +4,7 @@ A desktop app for teachers to sort students into balanced classes — handling p
 
 ## Download
 
-Download the latest installer from the [Releases page](https://github.com/chrisella/class-sorter-new/releases/latest):
+Download the latest installer from the [Releases page](https://github.com/chrisella/class-sorter/releases/latest):
 
 | Platform | File |
 |----------|------|

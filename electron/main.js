@@ -4,7 +4,7 @@ const https = require('https');
 const { autoUpdater } = require('electron-updater');
 
 const GITHUB_OWNER = 'chrisella';
-const GITHUB_REPO = 'class-sorter-new';
+const GITHUB_REPO = 'class-sorter';
 
 function fetchLatestRelease() {
   return new Promise((resolve) => {
