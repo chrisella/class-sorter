@@ -1,5 +1,7 @@
 # Class Sorter
 
+[![Build and Release](https://github.com/chrisella/class-sorter/actions/workflows/build.yml/badge.svg)](https://github.com/chrisella/class-sorter/actions/workflows/build.yml)
+
 A desktop app for teachers to sort students into balanced classes — handling preferred friends, blacklisted pairs, gender balance, EAL distribution, and SEND/EHCP/PPG needs automatically.
 
 ## Download
