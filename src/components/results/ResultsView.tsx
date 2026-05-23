@@ -557,7 +557,7 @@ export function ResultsView() {
 
       {sourceClasses.length > 0 && (
         <div id="tour-property-filter" className="flex items-center gap-2">
-          <span className="text-xs font-medium text-slate-500">Row color:</span>
+          <span className="text-xs font-medium text-slate-500">Row colour:</span>
           <div className="inline-flex rounded-lg border border-slate-200 bg-slate-100 p-0.5 text-xs font-medium">
             <button
               type="button"

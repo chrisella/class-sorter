@@ -27,7 +27,7 @@ export function exportToCSV(
     'Name',
     'Gender',
     'EAL',
-    'Behavior',
+    'Behaviour',
     'Ability',
     'EHCP',
     'SEND',
@@ -185,7 +185,7 @@ function generatePDFHTML(
           <span>EHCP: ${classStudents.filter((s) => s.ehcp).length}</span>
           <span>SEND: ${classStudents.filter((s) => s.send).length}</span>
           <span>PPG: ${classStudents.filter((s) => s.ppg).length}</span>
-          <span>Behavior Avg: ${behaviorAverage.toFixed(2)}</span>
+          <span>Behaviour Avg: ${behaviorAverage.toFixed(2)}</span>
           <span>Ability Avg: ${abilityAverage.toFixed(2)}</span>
           ${stats ? `<span>Satisfaction: ${stats.averageSatisfaction.toFixed(0)}%</span>` : ''}
         </div>
@@ -195,7 +195,7 @@ function generatePDFHTML(
               <th>Name</th>
               <th>Gender</th>
               <th>EAL</th>
-              <th>Behavior</th>
+              <th>Behaviour</th>
               <th>Ability</th>
               <th>EHCP</th>
               <th>SEND</th>
@@ -357,7 +357,7 @@ export async function exportToExcel(
       { header: 'Name', key: 'name', width: 24 },
       { header: 'Gender', key: 'gender', width: 9 },
       { header: 'EAL', key: 'eal', width: 7 },
-      { header: 'Behavior', key: 'behavior', width: 10 },
+      { header: 'Behaviour', key: 'behavior', width: 10 },
       { header: 'Ability', key: 'ability', width: 9 },
       { header: 'EHCP', key: 'ehcp', width: 7 },
       { header: 'SEND', key: 'send', width: 7 },

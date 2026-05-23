@@ -90,7 +90,7 @@ export function StudentTable() {
         },
       }),
       columnHelper.accessor('behavior', {
-        header: ({ column }) => <SortHeader column={column} label="Behavior" />,
+        header: ({ column }) => <SortHeader column={column} label="Behaviour" />,
         enableSorting: true,
         cell: (info) => {
           const student = info.row.original;

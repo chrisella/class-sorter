@@ -123,7 +123,7 @@ export function AddStudentForm({ onClose }: Props) {
           {/* Behavior and Ability */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Behavior</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Behaviour</label>
               <select
                 value={behavior}
                 onChange={(e) => setBehavior(Number(e.target.value) as Rank)}

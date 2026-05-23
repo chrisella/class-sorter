@@ -84,7 +84,7 @@ export function SourceClassSection() {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-slate-600 mb-1">Color (auto if blank)</label>
+            <label className="block text-xs font-medium text-slate-600 mb-1">Colour (auto if blank)</label>
             <ColorPicker value={newColor} onChange={setNewColor} allowNone />
           </div>
           <div className="flex gap-2">
