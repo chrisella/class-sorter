@@ -56,13 +56,14 @@ export function AddStudentForm({ onClose }: Props) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
-        <div className="px-6 py-4 border-b border-gray-200">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-md flex flex-col max-h-full">
+        <div className="px-6 py-4 border-b border-gray-200 flex-shrink-0">
           <h3 className="text-lg font-medium text-gray-900">Add Pupil</h3>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="flex flex-col overflow-hidden flex-1">
+        <div className="p-6 space-y-4 overflow-y-auto flex-1">
           {/* Name */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
@@ -247,8 +248,10 @@ export function AddStudentForm({ onClose }: Props) {
             )}
           </div>
 
+        </div>
+
           {/* Actions */}
-          <div className="flex justify-end gap-3 pt-4">
+          <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-200 flex-shrink-0">
             <button
               type="button"
               onClick={onClose}
