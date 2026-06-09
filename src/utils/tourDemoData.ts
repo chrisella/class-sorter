@@ -40,6 +40,7 @@ function mk(
     ability: 2,
     ehcp: false,
     send: false,
+    monitoringSen: false,
     ppg: false,
     sl: false,
     sourceClassId: sc,

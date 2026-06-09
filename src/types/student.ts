@@ -10,6 +10,7 @@ export interface Student {
   ability: Rank;
   ehcp: boolean;
   send: boolean;
+  monitoringSen: boolean;
   ppg: boolean;
   sl: boolean;
   sourceClassId: string | null;
@@ -29,6 +30,7 @@ export interface StudentInput {
   ability: Rank;
   ehcp: boolean;
   send: boolean;
+  monitoringSen?: boolean;
   ppg: boolean;
   sl: boolean;
   mustBeWithStudentName?: string;

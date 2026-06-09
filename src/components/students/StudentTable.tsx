@@ -194,6 +194,27 @@ export function StudentTable() {
           );
         },
       }),
+      columnHelper.accessor('monitoringSen', {
+        header: ({ column }) => <SortHeader column={column} label="Mon. SEN" />,
+        enableSorting: true,
+        cell: (info) => {
+          const student = info.row.original;
+          const value = info.getValue();
+          return (
+            <button
+              onClick={() => updateStudent(student.id, { monitoringSen: !value })}
+              className={`inline-flex px-2 py-1 text-xs font-medium rounded-full cursor-pointer transition-colors ${
+                value
+                  ? 'bg-purple-100 text-purple-700 hover:bg-purple-200'
+                  : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+              }`}
+              title={`Click to ${value ? 'unset' : 'set'} Monitoring SEN`}
+            >
+              {value ? 'Yes' : 'No'}
+            </button>
+          );
+        },
+      }),
       columnHelper.accessor('ppg', {
         header: ({ column }) => <SortHeader column={column} label="PPG" />,
         enableSorting: true,

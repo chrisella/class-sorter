@@ -43,6 +43,7 @@ export function StatisticsView() {
         eal: classStudents.filter((student) => student.isEAL).length,
         ehcp: classStudents.filter((student) => student.ehcp).length,
         send: classStudents.filter((student) => student.send).length,
+        monitoringSen: classStudents.filter((student) => student.monitoringSen).length,
         ppg: classStudents.filter((student) => student.ppg).length,
         avgSatisfaction:
           classSatisfaction.length > 0
@@ -84,6 +85,7 @@ export function StatisticsView() {
       totalEAL: assignedStudents.filter((student) => student.isEAL).length,
       totalEHCP: assignedStudents.filter((student) => student.ehcp).length,
       totalSEND: assignedStudents.filter((student) => student.send).length,
+      totalMonitoringSEN: assignedStudents.filter((student) => student.monitoringSen).length,
       totalPPG: assignedStudents.filter((student) => student.ppg).length,
       totalMustWithPairs,
       satisfiedMustWithPairs,
@@ -126,6 +128,7 @@ export function StatisticsView() {
     totalEAL,
     totalEHCP,
     totalSEND,
+    totalMonitoringSEN,
     totalPPG,
     totalMustWithPairs,
     satisfiedMustWithPairs,
@@ -221,10 +224,14 @@ export function StatisticsView() {
           <p className="text-2xl font-bold text-gray-900">{totalEHCP}</p>
         </div>
         <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <p className="text-sm text-gray-500">SEND / PPG</p>
+          <p className="text-sm text-gray-500">SEND / Mon. SEN</p>
           <p className="text-2xl font-bold text-gray-900">
-            {totalSEND} / {totalPPG}
+            {totalSEND} / {totalMonitoringSEN}
           </p>
+        </div>
+        <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <p className="text-sm text-gray-500">PPG</p>
+          <p className="text-2xl font-bold text-gray-900">{totalPPG}</p>
         </div>
       </div>
 
@@ -283,6 +290,7 @@ export function StatisticsView() {
                 <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">EAL</th>
                 <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">EHCP</th>
                 <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">SEND</th>
+                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Mon. SEN</th>
                 <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">PPG</th>
                 <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Satisfaction</th>
               </tr>
@@ -310,6 +318,7 @@ export function StatisticsView() {
                   <td className="px-4 py-2 text-sm text-right text-gray-600">{cls.eal}</td>
                   <td className="px-4 py-2 text-sm text-right text-gray-600">{cls.ehcp}</td>
                   <td className="px-4 py-2 text-sm text-right text-gray-600">{cls.send}</td>
+                  <td className="px-4 py-2 text-sm text-right text-gray-600">{cls.monitoringSen}</td>
                   <td className="px-4 py-2 text-sm text-right text-gray-600">{cls.ppg}</td>
                   <td className="px-4 py-2 text-sm text-right text-gray-600">
                     {cls.avgSatisfaction.toFixed(1)}%

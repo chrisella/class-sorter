@@ -232,6 +232,7 @@ function normalizeSortingConfig(config: SortingConfiguration): SortingConfigurat
       abilityBalance: safeWeight(config.priorityWeights.abilityBalance, 0.2),
       ehcpBalance: safeWeight(config.priorityWeights.ehcpBalance, 0.2),
       sendBalance: safeWeight(config.priorityWeights.sendBalance, 0.2),
+      monitoringSenBalance: safeWeight(config.priorityWeights.monitoringSenBalance, 0.2),
       ppgBalance: safeWeight(config.priorityWeights.ppgBalance, 0.2),
       slBalance: safeWeight(config.priorityWeights.slBalance, 0.2),
       sourceClassBalance: safeWeight(config.priorityWeights.sourceClassBalance, 0.2),
@@ -752,6 +753,7 @@ function calculateSoftScore(
   score += weights.abilityBalance * calculateRankBalance(students, classes, assignment, 'ability');
   score += weights.ehcpBalance * calculateBooleanBalance(students, classes, assignment, 'ehcp');
   score += weights.sendBalance * calculateBooleanBalance(students, classes, assignment, 'send');
+  score += weights.monitoringSenBalance * calculateBooleanBalance(students, classes, assignment, 'monitoringSen');
   score += weights.ppgBalance * calculateBooleanBalance(students, classes, assignment, 'ppg');
   score += weights.slBalance * calculateBooleanBalance(students, classes, assignment, 'sl');
 
@@ -876,7 +878,7 @@ function calculateBooleanBalance(
   students: Student[],
   classes: Class[],
   assignment: Assignment,
-  field: 'ehcp' | 'send' | 'ppg' | 'sl'
+  field: 'ehcp' | 'send' | 'monitoringSen' | 'ppg' | 'sl'
 ): number {
   const classCounts = new Map<string, { matching: number; total: number }>();
   for (const cls of classes) {

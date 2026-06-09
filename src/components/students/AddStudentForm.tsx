@@ -17,6 +17,7 @@ export function AddStudentForm({ onClose }: Props) {
   const [ability, setAbility] = useState<Rank>(2);
   const [ehcp, setEhcp] = useState(false);
   const [send, setSend] = useState(false);
+  const [monitoringSen, setMonitoringSen] = useState(false);
   const [ppg, setPpg] = useState(false);
   const [sl, setSl] = useState(false);
   const [preferredFriends, setPreferredFriends] = useState<string[]>([]);
@@ -44,6 +45,7 @@ export function AddStudentForm({ onClose }: Props) {
       ability,
       ehcp,
       send,
+      monitoringSen,
       ppg,
       sl,
       sourceClassId,
@@ -179,6 +181,15 @@ export function AddStudentForm({ onClose }: Props) {
                   className="mr-2 rounded"
                 />
                 SEND
+              </label>
+              <label className="flex items-center text-sm font-medium text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={monitoringSen}
+                  onChange={(e) => setMonitoringSen(e.target.checked)}
+                  className="mr-2 rounded"
+                />
+                Monitoring SEN
               </label>
               <label className="flex items-center text-sm font-medium text-gray-700">
                 <input

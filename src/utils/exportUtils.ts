@@ -31,6 +31,7 @@ export function exportToCSV(
     'Ability',
     'EHCP',
     'SEND',
+    'Monitoring SEN',
     'PPG',
     'Must Be With',
     'Assigned Class',
@@ -69,6 +70,7 @@ export function exportToCSV(
       student.ability.toString(),
       student.ehcp ? 'Yes' : 'No',
       student.send ? 'Yes' : 'No',
+      student.monitoringSen ? 'Yes' : 'No',
       student.ppg ? 'Yes' : 'No',
       mustBeWithName,
       assignedClass?.name || 'Unassigned',
@@ -184,6 +186,7 @@ function generatePDFHTML(
           <span>EAL: ${classStudents.filter((s) => s.isEAL).length}</span>
           <span>EHCP: ${classStudents.filter((s) => s.ehcp).length}</span>
           <span>SEND: ${classStudents.filter((s) => s.send).length}</span>
+          <span>Mon. SEN: ${classStudents.filter((s) => s.monitoringSen).length}</span>
           <span>PPG: ${classStudents.filter((s) => s.ppg).length}</span>
           <span>Behaviour Avg: ${behaviorAverage.toFixed(2)}</span>
           <span>Ability Avg: ${abilityAverage.toFixed(2)}</span>
@@ -199,6 +202,7 @@ function generatePDFHTML(
               <th>Ability</th>
               <th>EHCP</th>
               <th>SEND</th>
+              <th>Mon. SEN</th>
               <th>PPG</th>
               <th>Must Be With</th>
               <th>Preferred Friends</th>
@@ -230,6 +234,7 @@ function generatePDFHTML(
                     <td>${student.ability}</td>
                     <td>${student.ehcp ? 'Yes' : '-'}</td>
                     <td>${student.send ? 'Yes' : '-'}</td>
+                    <td>${student.monitoringSen ? 'Yes' : '-'}</td>
                     <td>${student.ppg ? 'Yes' : '-'}</td>
                     <td>${mustBeWithName}</td>
                     <td>${friendsList}</td>
@@ -361,6 +366,7 @@ export async function exportToExcel(
       { header: 'Ability', key: 'ability', width: 9 },
       { header: 'EHCP', key: 'ehcp', width: 7 },
       { header: 'SEND', key: 'send', width: 7 },
+      { header: 'Mon. SEN', key: 'monitoringSen', width: 11 },
       { header: 'PPG', key: 'ppg', width: 7 },
       { header: 'Must Be With', key: 'mustBeWith', width: 20 },
       { header: 'Preferred Friends', key: 'friends', width: 36 },
@@ -400,6 +406,7 @@ export async function exportToExcel(
         ability: student.ability,
         ehcp: student.ehcp ? 'Yes' : 'No',
         send: student.send ? 'Yes' : 'No',
+        monitoringSen: student.monitoringSen ? 'Yes' : 'No',
         ppg: student.ppg ? 'Yes' : 'No',
         mustBeWith: mustBeWithName,
         friends: friendNames,
@@ -421,6 +428,7 @@ export async function exportToExcel(
     { header: 'EAL', key: 'eal', width: 7 },
     { header: 'EHCP', key: 'ehcp', width: 7 },
     { header: 'SEND', key: 'send', width: 7 },
+    { header: 'Mon. SEN', key: 'monitoringSen', width: 11 },
     { header: 'PPG', key: 'ppg', width: 7 },
     { header: 'S&L', key: 'sl', width: 7 },
     { header: 'Friend Match %', key: 'friendMatch', width: 15 },
@@ -455,6 +463,7 @@ export async function exportToExcel(
       eal: classStudents.filter((s) => s.isEAL).length,
       ehcp: classStudents.filter((s) => s.ehcp).length,
       send: classStudents.filter((s) => s.send).length,
+      monitoringSen: classStudents.filter((s) => s.monitoringSen).length,
       ppg: classStudents.filter((s) => s.ppg).length,
       sl: classStudents.filter((s) => s.sl).length,
       friendMatch: `${avgSatisfaction.toFixed(1)}%`,

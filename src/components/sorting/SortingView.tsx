@@ -94,6 +94,7 @@ export function SortingView() {
     abilityBalance: safeWeight(sortingConfig.priorityWeights.abilityBalance, 0.2),
     ehcpBalance: safeWeight(sortingConfig.priorityWeights.ehcpBalance, 0.2),
     sendBalance: safeWeight(sortingConfig.priorityWeights.sendBalance, 0.2),
+    monitoringSenBalance: safeWeight(sortingConfig.priorityWeights.monitoringSenBalance, 0.2),
     ppgBalance: safeWeight(sortingConfig.priorityWeights.ppgBalance, 0.2),
     slBalance: safeWeight(sortingConfig.priorityWeights.slBalance, 0.2),
     sourceClassBalance: safeWeight(sortingConfig.priorityWeights.sourceClassBalance, 0.2),
@@ -117,6 +118,7 @@ export function SortingView() {
     { key: 'abilityBalance', label: 'Balance ability levels' },
     { key: 'ehcpBalance', label: 'Spread EHCP pupils evenly' },
     { key: 'sendBalance', label: 'Spread SEND pupils evenly' },
+    { key: 'monitoringSenBalance', label: 'Spread Monitoring SEN pupils evenly' },
     { key: 'ppgBalance', label: 'Spread PPG pupils evenly' },
     { key: 'slBalance', label: 'Spread S&L pupils evenly' },
     {

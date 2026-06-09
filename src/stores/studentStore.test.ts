@@ -15,6 +15,7 @@ function addStudent(name = 'Alice') {
     ability: 2,
     ehcp: false,
     send: false,
+    monitoringSen: false,
     ppg: false,
     sl: false,
     mustBeWithStudentId: null,

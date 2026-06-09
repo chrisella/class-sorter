@@ -57,5 +57,11 @@ export function validateAndParseState(raw: unknown): AppState {
     obj.sourceClasses = [];
   }
 
+  // Backfill fields added after initial schema version
+  obj.students = (obj.students as Record<string, unknown>[]).map((s) => ({
+    ...s,
+    monitoringSen: (s.monitoringSen as boolean | undefined) ?? false,
+  }));
+
   return obj as unknown as AppState;
 }

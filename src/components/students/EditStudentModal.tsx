@@ -18,6 +18,7 @@ export function EditStudentModal({ student, onClose }: Props) {
   const [ability, setAbility] = useState<Rank>(student.ability);
   const [ehcp, setEhcp] = useState(student.ehcp);
   const [send, setSend] = useState(student.send);
+  const [monitoringSen, setMonitoringSen] = useState(student.monitoringSen);
   const [ppg, setPpg] = useState(student.ppg);
   const [sl, setSl] = useState(student.sl ?? false);
   const [preferredFriends, setPreferredFriends] = useState<string[]>(student.preferredFriends);
@@ -55,6 +56,7 @@ export function EditStudentModal({ student, onClose }: Props) {
       ability,
       ehcp,
       send,
+      monitoringSen,
       ppg,
       sl,
       sourceClassId,
@@ -195,6 +197,15 @@ export function EditStudentModal({ student, onClose }: Props) {
                   className="mr-2 rounded"
                 />
                 SEND
+              </label>
+              <label className="flex items-center text-sm font-medium text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={monitoringSen}
+                  onChange={(e) => setMonitoringSen(e.target.checked)}
+                  className="mr-2 rounded"
+                />
+                Monitoring SEN
               </label>
               <label className="flex items-center text-sm font-medium text-gray-700">
                 <input

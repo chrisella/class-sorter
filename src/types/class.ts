@@ -46,6 +46,7 @@ export interface SortingConfiguration {
     abilityBalance: number;          // Weight for ability balance (0-1)
     ehcpBalance: number;             // Weight for EHCP distribution (0-1)
     sendBalance: number;             // Weight for SEND distribution (0-1)
+    monitoringSenBalance: number;    // Weight for Monitoring SEN distribution (0-1)
     ppgBalance: number;              // Weight for PPG distribution (0-1)
     slBalance: number;               // Weight for S&L distribution (0-1)
     sourceClassBalance: number;      // Weight for source class distribution (0-0.5)

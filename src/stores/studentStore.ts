@@ -98,6 +98,7 @@ interface StudentState {
     ability: Rank;
     ehcp: boolean;
     send: boolean;
+    monitoringSen?: boolean;
     ppg: boolean;
     sl: boolean;
     mustBeWithStudentName?: string;
@@ -129,6 +130,7 @@ export const useStudentStore = create<StudentState>()(
           ability: studentData.ability,
           ehcp: studentData.ehcp,
           send: studentData.send,
+          monitoringSen: studentData.monitoringSen ?? false,
           ppg: studentData.ppg,
           sl: studentData.sl ?? false,
           sourceClassId: studentData.sourceClassId ?? null,
@@ -239,6 +241,7 @@ export const useStudentStore = create<StudentState>()(
           ability: data.ability,
           ehcp: data.ehcp,
           send: data.send,
+          monitoringSen: data.monitoringSen ?? false,
           ppg: data.ppg,
           sl: data.sl ?? false,
           sourceClassId: null,
@@ -320,7 +323,17 @@ export const useStudentStore = create<StudentState>()(
     }),
     {
       name: 'class-sorter-students',
-      version: 1,
+      version: 2,
+      migrate: (persistedState: unknown, fromVersion: number) => {
+        const state = persistedState as StudentState;
+        if (fromVersion < 2) {
+          state.students = state.students.map((s) => ({
+            ...s,
+            monitoringSen: (s as Student & { monitoringSen?: boolean }).monitoringSen ?? false,
+          }));
+        }
+        return state;
+      },
     }
   )
 );

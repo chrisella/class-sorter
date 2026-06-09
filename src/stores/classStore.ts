@@ -41,6 +41,7 @@ const defaultSortingConfig: SortingConfiguration = {
     abilityBalance: 0.2,
     ehcpBalance: 0.2,
     sendBalance: 0.2,
+    monitoringSenBalance: 0.2,
     ppgBalance: 0.2,
     slBalance: 0.2,
     sourceClassBalance: 0.2,
