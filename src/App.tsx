@@ -83,7 +83,10 @@ function App() {
           <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
             <div className="max-w-2xl">
               <p className="text-sm font-medium uppercase tracking-[0.2em] text-sky-700">
-                Class Sorter
+                Class Sorter{' '}
+                <span className="font-normal normal-case tracking-normal text-slate-400">
+                  v{__APP_VERSION__}
+                </span>
               </p>
               <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900">
                 Create balanced classes without the spreadsheet juggling
