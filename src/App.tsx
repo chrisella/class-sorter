@@ -79,7 +79,7 @@ function App() {
     <div className="min-h-screen bg-slate-100 text-slate-900">
       <UpdateBanner />
       <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto max-w-7xl px-6 py-6">
+        <div className="mx-auto max-w-screen-2xl px-6 py-6">
           <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
             <div className="max-w-2xl">
               <p className="text-sm font-medium uppercase tracking-[0.2em] text-sky-700">
@@ -156,7 +156,7 @@ function App() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-6 py-6">{renderView()}</main>
+      <main className="mx-auto max-w-screen-2xl px-6 py-6">{renderView()}</main>
     </div>
   );
 }
